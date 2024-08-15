@@ -58,6 +58,7 @@
             };
             programs.rustfmt.enable = true;
             programs.statix.enable = true;
+            programs.yamlfmt.enable = true;
             # keep-sorted end
             settings.formatter = {
               # keep-sorted start block=yes
@@ -69,6 +70,10 @@
                 "*.json"
                 "./.github/*.json"
                 "./.vscode/*.json"
+              ];
+              yamlfmt.includes = [
+                "*.yml"
+                "*.yaml"
               ];
               # keep-sorted end
             };
