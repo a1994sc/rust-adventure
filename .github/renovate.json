@@ -23,24 +23,15 @@
     },
     {
       "enabled": true,
-      "enabledManagers": [ "cargo" ],
-      "paths": [ "**/Cargo.toml" ],
+      "enabledManagers": [
+        "cargo"
+      ],
+      "paths": [
+        "**/Cargo.toml"
+      ],
       "groupName": "Rust Deps",
       "groupSlug": "allRust",
       "commitMessagePrefix": "chore(cargo): "
-    }
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "description": [
-        "Process custom dependencies"
-      ],
-      "matchStrings": [
-        "(?m:# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+?: \"?(?<currentValue>\\S+?)\"?$)",
-        "(?m:# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n.+?\/(?<currentValue>(v|\\d)[^\/]+)\\S+$)"
-      ],
-      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}"
     }
   ]
 }
