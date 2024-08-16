@@ -89,7 +89,7 @@
               config.process-compose.cargo-doc-live.outputs.package
             ];
           };
-          packages.default = self'.packages.rust-nix-template;
+          packages.default = self'.packages.rust-testing;
         };
     };
 }
