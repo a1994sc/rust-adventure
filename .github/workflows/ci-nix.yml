@@ -12,13 +12,13 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-14]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
     - uses: DeterminateSystems/nix-installer-action@main
       with:
         extra-conf: |
           trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
           substituters = https://cache.garnix.io?priority=41 https://cache.nixos.org/
-    - uses: yaxitech/nix-install-pkgs-action@v3
+    - uses: yaxitech/nix-install-pkgs-action@cb7d5282f5fc06f049e1098bf4ea522a2287dc73 # v4
       with:
         packages: "github:srid/nixci"
     - run: nixci build
