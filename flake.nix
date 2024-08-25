@@ -1,15 +1,14 @@
 {
+  description = "Rust playground";
+
   inputs = {
     # keep-sorted start block=yes case=no
-    cargo-doc-live.url = "github:srid/cargo-doc-live";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
-    rust-flake = {
-      url = "github:juspay/rust-flake";
+    fenix = {
+      url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    systems.url = "github:nix-systems/default";
+    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,32 +17,27 @@
   };
 
   outputs =
-    inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
-      imports = [
-        inputs.treefmt-nix.flakeModule
-        inputs.rust-flake.flakeModules.default
-        inputs.rust-flake.flakeModules.nixpkgs
-        inputs.process-compose-flake.flakeModule
-        inputs.cargo-doc-live.flakeModule
-      ];
-      perSystem =
-        {
-          config,
-          self',
-          pkgs,
-          lib,
-          ...
-        }:
-        {
-          rust-project.crates."rust-testing".crane.args = {
-            buildInputs = lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [ IOKit ]);
-          };
-
-          # Add your auto-formatters here.
-          # cf. https://nixos.asia/en/treefmt
-          treefmt.config = {
+    {
+      self,
+      fenix,
+      nixpkgs,
+      flake-utils,
+      treefmt-nix,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+        f-core = fenix.packages.${system};
+        f-wasm =
+          with fenix.packages.${system};
+          combine [
+            stable.toolchain
+            targets.wasm32-unknown-unknown.stable.rust-std
+          ];
+        treefmtEval = treefmt-nix.lib.evalModule pkgs (
+          { pkgs, ... }:
+          {
             projectRootFile = "flake.nix";
             # keep-sorted start block=yes case=no
 
@@ -72,19 +66,49 @@
               ];
               # keep-sorted end
             };
-          };
+          }
+        );
+      in
+      {
+        packages = {
+          default = pkgs.rustPlatform.buildRustPackage {
+            pname = "rust-testing";
+            version = (pkgs.lib.importTOML ./Cargo.toml).package.version;
+            src = ./.;
+            cargoBuildFlags = "-p rust-testing";
 
-          devShells.default = pkgs.mkShell {
-            inputsFrom = [
-              self'.devShells.rust
-              config.treefmt.build.devShell
-            ];
-            packages = [
-              pkgs.cargo-watch
-              config.process-compose.cargo-doc-live.outputs.package
+            cargoLock = {
+              lockFile = ./Cargo.lock;
+            };
+          };
+        };
+        devShells = {
+          default = pkgs.mkShell {
+            name = "rust";
+            packages = with pkgs; [
+              f-core.stable.toolchain
+              cargo-watch
+              nodePackages.typescript-language-server
+              vscode-langservers-extracted
             ];
           };
-          packages.default = self'.packages.rust-testing;
+          wasm = pkgs.mkShell {
+            name = "rust-wasm";
+            packages = with pkgs; [
+              f-wasm
+              nodejs_22
+              wasm-pack
+              cargo-watch
+              llvmPackages.bintools
+              nodePackages.typescript-language-server
+              vscode-langservers-extracted
+            ];
+            env = {
+              CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER = "lld";
+            };
+          };
         };
-    };
+        formatter = treefmtEval.config.build.wrapper;
+      }
+    );
 }
