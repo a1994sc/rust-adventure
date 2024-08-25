@@ -40,7 +40,21 @@
           {
             projectRootFile = "flake.nix";
             # keep-sorted start block=yes case=no
-
+            programs.dprint = {
+              enable = true;
+              settings = {
+                includes = [ "**/*.{json,md,toml}" ];
+                plugins =
+                  let
+                    dprintWasmPluginUrl = n: v: "https://plugins.dprint.dev/${n}-${v}.wasm";
+                  in
+                  [
+                    (dprintWasmPluginUrl "json" "0.19.3")
+                    (dprintWasmPluginUrl "markdown" "0.17.0")
+                    (dprintWasmPluginUrl "toml" "0.6.2")
+                  ];
+              };
+            };
             programs.jsonfmt = {
               enable = true;
               package = pkgs.jsonfmt;
@@ -74,7 +88,7 @@
           default = rust-testing;
           rust-testing = pkgs.rustPlatform.buildRustPackage {
             pname = "rust-testing";
-            version = (pkgs.lib.importTOML ./Cargo.toml).package.version;
+            inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
             src = ./.;
             cargoBuildFlags = "-p rust-testing";
 

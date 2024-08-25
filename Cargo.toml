@@ -1,7 +1,6 @@
 [package]
 authors = ["Allen Conlon <allen@conlon.dev"]
 edition = "2021"
-# If you change the name here, you must also do it in flake.nix (and run `cargo generate-lockfile` afterwards)
 name = "rust-testing"
 description = "A simple Rust project using Nix"
 version = "0.1.0"
