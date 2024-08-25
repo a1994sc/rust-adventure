@@ -70,8 +70,9 @@
         );
       in
       {
-        packages = {
-          default = pkgs.rustPlatform.buildRustPackage {
+        packages = rec {
+          default = rust-testing;
+          rust-testing = pkgs.rustPlatform.buildRustPackage {
             pname = "rust-testing";
             version = (pkgs.lib.importTOML ./Cargo.toml).package.version;
             src = ./.;
