@@ -1,5 +1,11 @@
 {
   "rust-analyzer.files.excludeDirs": [
     ".direnv"
-  ]
+  ],
+  "terminal.integrated.automationProfile.linux": {
+    "path": "${workspaceRoot}/.vscode/nix-shell-or-bash.sh",
+    "env": {
+      "PROJ_DIR": "${workspaceRoot}"
+    }
+  }
 }

@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Format",
+      "type": "shell",
+      "command": "nix fmt",
+      "group": {
+        "isDefault": true,
+        "kind": "build"
+      }
+    },
+    {
+      "label": "Nix Flake update",
+      "type": "shell",
+      "command": "nix flake update",
+      "group": {
+        "isDefault": false,
+        "kind": "build"
+      }
+    }
+  ]
+}
