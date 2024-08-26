@@ -82,6 +82,30 @@
             };
           }
         );
+        pack =
+          let
+            core = with pkgs; [
+              cargo-watch
+              nodePackages.typescript-language-server
+              vscode-langservers-extracted
+            ];
+          in
+          {
+            default = {
+              packages = [ f-core.stable.toolchain ] ++ core;
+            };
+            wasm = {
+              packages =
+                with pkgs;
+                [
+                  f-wasm
+                  nodejs_22
+                  wasm-pack
+                  llvmPackages.bintools
+                ]
+                ++ core;
+            };
+          };
       in
       {
         packages = rec {
@@ -99,25 +123,12 @@
         };
         devShells = {
           default = pkgs.mkShell {
+            inherit (pack.default) packages;
             name = "rust";
-            packages = with pkgs; [
-              f-core.stable.toolchain
-              cargo-watch
-              nodePackages.typescript-language-server
-              vscode-langservers-extracted
-            ];
           };
           wasm = pkgs.mkShell {
+            inherit (pack.wasm) packages;
             name = "rust-wasm";
-            packages = with pkgs; [
-              f-wasm
-              nodejs_22
-              wasm-pack
-              cargo-watch
-              llvmPackages.bintools
-              nodePackages.typescript-language-server
-              vscode-langservers-extracted
-            ];
             env = {
               CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER = "lld";
             };
