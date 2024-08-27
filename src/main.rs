@@ -1,5 +1,7 @@
 use std::fmt;
 use std::clone;
+// use gethostname::gethostname;
+
 
 struct User {
     active: bool,
@@ -23,6 +25,10 @@ impl clone::Clone for User {
 }
 
 fn main() {
+  // let name = hostname::get();
+
+  // println!("{}", name.to_string_lossy());
+
   let user1 = User {
     email: String::from("someone@example.com"),
     username: String::from("someusername123"),
