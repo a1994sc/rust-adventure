@@ -1,17 +1,10 @@
 [package]
 authors = ["Allen Conlon <allen@conlon.dev"]
 edition = "2021"
-name = "wasm-testing"
+name = "rust-testing"
 description = "A simple Rust project using Nix"
 version = "0.1.0"
 license = "MIT"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 [dependencies]
-wasm-bindgen = { version = "0.2.93", default-features = false }
-wasm-bindgen-futures = { version = "0.4.43", default-features = false }
-
-[dev-dependencies]
-wasm-bindgen-test = { version = "0.3.43", default-features = false }
+rocket = "0.5.1"

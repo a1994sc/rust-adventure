@@ -85,40 +85,29 @@
       in
       {
         packages = rec {
-          default = wasm-testing;
-          wasm-testing = pkgs.rustPlatform.buildRustPackage {
-            pname = "wasm-testing";
+          default = rust-testing;
+          rust-testing = pkgs.rustPlatform.buildRustPackage {
+            pname = "rust-testing";
             inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
             src = ./.;
-            cargoBuildFlags = "-p wasm-testing";
+            cargoBuildFlags = "-p rust-testing";
 
             cargoLock = {
               lockFile = ./Cargo.lock;
             };
           };
         };
-        devShells = {
-          default = pkgs.mkShell {
-            name = "rust-wasm";
-            packages = with pkgs; [
-              # wasm
-              f-wasm
-              nodejs_22
-              wasm-pack
-              llvmPackages.bintools
-              # dev
-              nodePackages.copy-webpack-plugin
-              nodePackages.webpack
-              nodePackages.webpack-dev-server
-              nodePackages.webpack-cli
-              # core
-              cargo-watch
-              nodePackages.typescript-language-server
-              vscode-langservers-extracted
-            ];
-            env = {
-              CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER = "lld";
-            };
+        devShells.default = pkgs.mkShell {
+          name = "rust-wasm";
+          packages = with pkgs; [
+            f-core.stable.toolchain
+            # core
+            cargo-watch
+            nodePackages.typescript-language-server
+            vscode-langservers-extracted
+          ];
+          env = {
+            ROCKET_CLI_COLORS = "false";
           };
         };
         formatter = treefmtEval.config.build.wrapper;
