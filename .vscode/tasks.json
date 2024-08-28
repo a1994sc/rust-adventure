@@ -27,6 +27,15 @@
         "isDefault": false,
         "kind": "build"
       }
+    },
+    {
+      "label": "clean",
+      "type": "shell",
+      "command": "rm -rf pkg target .direnv",
+      "group": {
+        "isDefault": false,
+        "kind": "build"
+      }
     }
   ]
 }

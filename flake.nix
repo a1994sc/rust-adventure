@@ -85,12 +85,12 @@
       in
       {
         packages = rec {
-          default = wasm-game-of-life;
-          wasm-game-of-life = pkgs.rustPlatform.buildRustPackage {
-            pname = "wasm-game-of-life";
+          default = wasm-testing;
+          wasm-testing = pkgs.rustPlatform.buildRustPackage {
+            pname = "wasm-testing";
             inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
             src = ./.;
-            cargoBuildFlags = "-p wasm-game-of-life";
+            cargoBuildFlags = "-p wasm-testing";
 
             cargoLock = {
               lockFile = ./Cargo.lock;
@@ -107,6 +107,8 @@
               wasm-pack
               llvmPackages.bintools
               # dev
+              nodePackages.copy-webpack-plugin
+              nodePackages.webpack
               nodePackages.webpack-dev-server
               nodePackages.webpack-cli
               # core
