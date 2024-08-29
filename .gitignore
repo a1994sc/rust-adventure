@@ -1,4 +1,4 @@
+/data
 /target
-/result
-/result-lib
+/result*
 .direnv
