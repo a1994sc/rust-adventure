@@ -82,12 +82,29 @@
             };
           }
         );
+        nativeBuildInputs = with pkgs; [
+          f-core.stable.toolchain
+          pkg-config
+          # Use mold for faster linking
+          mold
+          clang
+        ];
+        buildInputs = with pkgs; [
+          openssl
+        ];
+        env = {
+          ROCKET_CLI_COLORS = "false";
+          CARGO_LINKER = "clang";
+          CARGO_RUSTFLAGS = "-Clink-arg=-fuse-ld=${pkgs.mold}/bin/mold";
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
+        };
       in
       {
         packages = rec {
           default = rust-testing;
           rust-testing = pkgs.rustPlatform.buildRustPackage {
             pname = "rust-testing";
+            inherit nativeBuildInputs buildInputs env;
             inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
             src = ./.;
             cargoBuildFlags = "-p rust-testing";
@@ -98,17 +115,15 @@
           };
         };
         devShells.default = pkgs.mkShell {
-          name = "rust-wasm";
+          inherit nativeBuildInputs buildInputs env;
+          name = "rust";
+          # Used for development and testing
           packages = with pkgs; [
-            f-core.stable.toolchain
-            # core
+            process-compose
             cargo-watch
             nodePackages.typescript-language-server
             vscode-langservers-extracted
           ];
-          env = {
-            ROCKET_CLI_COLORS = "false";
-          };
         };
         formatter = treefmtEval.config.build.wrapper;
       }
