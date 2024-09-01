@@ -123,9 +123,7 @@
               inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
               src = ./.;
               cargoBuildFlags = "-p rust-testing";
-              cargoLock = {
-                lockFile = ./Cargo.lock;
-              };
+              cargoLock.lockFile = ./Cargo.lock;
             };
           };
           devShells.default = pkgs.mkShell {
@@ -133,6 +131,7 @@
             name = "rust";
             # Used for development and testing
             packages = with pkgs; [
+              typos
               gnumake
               process-compose
               cargo-watch

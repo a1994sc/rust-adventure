@@ -11,7 +11,7 @@ clean:
 
 .PHONY: test
 test:
-	@echo "Need to add some tests at some point"
+	@cargo test
 
 .PHONY: fmt
 fmt:
