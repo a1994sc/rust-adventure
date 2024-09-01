@@ -13,4 +13,4 @@ rocket = {version = "0.5.1", features = ["json", "msgpack", "uuid"]}
 num = "0.4.3"
 
 [build-dependencies]
-built = { version = "0.7", features = ["cargo-lock", "dependency-tree", "git2", "chrono", "semver"] }
+built = { version = "0.7.4", features = ["cargo-lock", "dependency-tree", "git2", "chrono", "semver"] }
