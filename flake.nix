@@ -133,6 +133,7 @@
             name = "rust";
             # Used for development and testing
             packages = with pkgs; [
+              gnumake
               process-compose
               cargo-watch
               nodePackages.typescript-language-server
