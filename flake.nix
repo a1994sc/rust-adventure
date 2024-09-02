@@ -117,7 +117,9 @@
         {
           packages = rec {
             default = rust-testing;
-            rust-testing = pkgs.rustPlatform.buildRustPackage {
+            rust-testing = pkgs.rustPlatform.buildRustPackage.override {
+              stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
+            } {
               pname = "rust-testing";
               inherit nativeBuildInputs buildInputs env;
               inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
@@ -126,7 +128,9 @@
               cargoLock.lockFile = ./Cargo.lock;
             };
           };
-          devShells.default = pkgs.mkShell {
+          devShells.default = pkgs.mkShell.override {
+            stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
+          } {
             inherit nativeBuildInputs buildInputs env;
             name = "rust";
             # Used for development and testing
