@@ -29,6 +29,15 @@
       }
     },
     {
+      "label": "test",
+      "type": "shell",
+      "command": "make test",
+      "group": {
+        "isDefault": false,
+        "kind": "build"
+      }
+    },
+    {
       "label": "clean",
       "type": "shell",
       "command": "rm -rf pkg target .direnv",

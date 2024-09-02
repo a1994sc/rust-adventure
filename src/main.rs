@@ -13,6 +13,7 @@ fn rocket() -> _ {
             crate::info::info::todo,
             crate::info::info::healthz,
             crate::info::info::version,
+            crate::info::info::packages,
             crate::link::linkage::separate,
             crate::link::linkage::pair
         ],

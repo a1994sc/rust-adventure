@@ -8,28 +8,25 @@ pub mod info {
 
     #[derive(Serialize, Debug)]
     #[serde(crate = "rocket::serde")]
-    pub struct Git {
-        version: String,
-        dirty: bool,
-        commit: String,
-    }
-
-    impl PartialEq for Git {
-        fn eq(&self, other: &Self) -> bool {
-            self.version == other.version
-                && self.commit == other.commit
-                && self.dirty == other.dirty
-        }
-    }
-
-    #[derive(Serialize, Debug)]
-    #[serde(crate = "rocket::serde")]
     pub struct Version {
         hostname: String,
         version: String,
         message: String,
         runtime: String,
-        git: Git,
+    }
+
+    #[derive(Serialize, Debug, Clone)]
+    #[serde(crate = "rocket::serde")]
+    pub struct Package {
+        package: String,
+        version: String,
+    }
+
+    #[derive(Serialize, Debug)]
+    #[serde(crate = "rocket::serde")]
+    pub struct Packages {
+        direct: Vec<Package>,
+        indirect: Vec<Package>,
     }
 
     impl PartialEq for Version {
@@ -38,7 +35,6 @@ pub mod info {
                 && self.runtime == other.runtime
                 && self.version == other.version
                 && self.message == other.message
-                && self.git == other.git
         }
     }
 
@@ -77,32 +73,11 @@ pub mod info {
             Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
         };
 
-        let git: Git;
-
-        if let (Some(v), Some(dirty), Some(hash)) = (
-            super::built_info::GIT_VERSION,
-            super::built_info::GIT_DIRTY,
-            super::built_info::GIT_COMMIT_HASH,
-        ) {
-            git = Git {
-                commit: hash.to_string(),
-                version: v.to_string(),
-                dirty,
-            };
-        } else {
-            git = Git {
-                commit: "fake-hash".to_string(),
-                version: "0.0.0".to_string(),
-                dirty: true,
-            };
-        }
-
         let version: Version = Version {
             runtime: super::built_info::RUSTC_VERSION.to_string(),
-            message: super::built_info::RUSTC_VERSION.to_string(),
+            message: "This is a cool REST API".to_string(),
             version: super::built_info::PKG_VERSION.to_string(),
             hostname: host.to_string(),
-            git: git,
         };
 
         Json(version)
@@ -114,6 +89,22 @@ pub mod info {
             message: "Hello World!".to_string(),
         };
         Json(msg)
+    }
+
+    #[get("/package", format = "json")]
+    pub fn packages() -> Json<Packages> {
+        let mut direct: Vec<Package> = Vec::new();
+        let mut indirect: Vec<Package> = Vec::new();
+
+        for (_i, el) in super::built_info::DIRECT_DEPENDENCIES.iter().enumerate() {
+            direct.push(Package {package: String::from(el.0), version: String::from(el.1)})
+        }
+
+        for (_i, el) in super::built_info::INDIRECT_DEPENDENCIES.iter().enumerate() {
+            indirect.push(Package {package: String::from(el.0), version: String::from(el.1)})
+        }
+
+        Json(Packages { direct, indirect })
     }
 
     #[get("/healthz")]
@@ -166,27 +157,6 @@ pub mod info {
             };
             assert_eq!(super::todo().into_inner(), user0);
             assert_ne!(super::todo().into_inner(), user1);
-        }
-
-        #[test]
-        fn struct_git() {
-            let same0: super::Git = super::Git {
-                version: "this-is-a-test".to_string(),
-                commit: "aaaaa".to_string(),
-                dirty: true,
-            };
-            let same1: super::Git = super::Git {
-                version: "this-is-a-test".to_string(),
-                commit: "aaaaa".to_string(),
-                dirty: true,
-            };
-            let diff: super::Git = super::Git {
-                version: "this-is-a-test".to_string(),
-                commit: "bbbbb".to_string(),
-                dirty: false,
-            };
-            assert_eq!(same0, same1);
-            assert_ne!(same0, diff);
         }
 
         #[test]
