@@ -117,32 +117,38 @@
         {
           packages = rec {
             default = rust-testing;
-            rust-testing = pkgs.rustPlatform.buildRustPackage.override {
-              stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
-            } {
-              pname = "rust-testing";
-              inherit nativeBuildInputs buildInputs env;
-              inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
-              src = ./.;
-              cargoBuildFlags = "-p rust-testing";
-              cargoLock.lockFile = ./Cargo.lock;
-            };
+            rust-testing =
+              pkgs.rustPlatform.buildRustPackage.override
+                {
+                  stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
+                }
+                {
+                  pname = "rust-testing";
+                  inherit nativeBuildInputs buildInputs env;
+                  inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
+                  src = ./.;
+                  cargoBuildFlags = "-p rust-testing";
+                  cargoLock.lockFile = ./Cargo.lock;
+                };
           };
-          devShells.default = pkgs.mkShell.override {
-            stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
-          } {
-            inherit nativeBuildInputs buildInputs env;
-            name = "rust";
-            # Used for development and testing
-            packages = with pkgs; [
-              typos
-              gnumake
-              process-compose
-              cargo-watch
-              nodePackages.typescript-language-server
-              vscode-langservers-extracted
-            ];
-          };
+          devShells.default =
+            pkgs.mkShell.override
+              {
+                stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
+              }
+              {
+                inherit nativeBuildInputs buildInputs env;
+                name = "rust";
+                # Used for development and testing
+                packages = with pkgs; [
+                  typos
+                  gnumake
+                  process-compose
+                  cargo-watch
+                  nodePackages.typescript-language-server
+                  vscode-langservers-extracted
+                ];
+              };
           formatter = treefmtEval.config.build.wrapper;
           process-compose.redis-service =
             { config, ... }:

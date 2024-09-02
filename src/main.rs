@@ -1,21 +1,15 @@
-#[macro_use]
-extern crate rocket;
+use actix_web::{web, App, HttpServer};
 
-mod info;
 mod link;
 
-#[launch]
-fn rocket() -> _ {
-    rocket::build().mount(
-        "/",
-        routes![
-            crate::info::info::index,
-            crate::info::info::todo,
-            crate::info::info::healthz,
-            crate::info::info::version,
-            crate::info::info::packages,
-            crate::link::linkage::separate,
-            crate::link::linkage::pair
-        ],
-    )
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .service(crate::link::linkage::index)
+            .service(web::scope("/v0").configure(crate::link::linkage::scoped_config))
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
