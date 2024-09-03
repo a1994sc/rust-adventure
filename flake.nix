@@ -4,16 +4,24 @@
   inputs = {
     # keep-sorted start block=yes case=no
     fenix = {
-      url = "github:nix-community/fenix";
+      url = "git+https://github.com/nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.rust-analyzer-src.follows = "rust-analyzer-src";
     };
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
-    services-flake.url = "github:juspay/services-flake";
-    systems.url = "github:nix-systems/default";
+    flake-parts = {
+      url = "git+https://github.com/hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+    nixpkgs.url = "git+https://github.com/nixos/nixpkgs?ref=nixpkgs-unstable";
+    process-compose-flake.url = "git+https://github.com/Platonic-Systems/process-compose-flake";
+    rust-analyzer-src = {
+      flake = false;
+      url = "git+https://github.com/rust-lang/rust-analyzer?ref=refs/tags/nightly";
+    };
+    services-flake.url = "git+https://github.com/juspay/services-flake";
+    systems.url = "git+https://github.com/nix-systems/default";
     treefmt-nix = {
-      url = "github:numtide/treefmt-nix";
+      url = "git+https://github.com/numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # keep-sorted end
@@ -82,6 +90,8 @@
               programs.rustfmt.enable = true;
               programs.statix.enable = true;
               # keep-sorted end
+              # programs.clippy.enable = true;
+              # programs.clippy.settings.allFeatures = true;
               settings.formatter = {
                 # keep-sorted start block=yes
                 actionlint = {
@@ -102,53 +112,79 @@
             pkg-config
             # Use mold for faster linking
             mold
-            clang
+            clang_15
           ];
           buildInputs = with pkgs; [
             openssl
           ];
           env = {
-            ROCKET_CLI_COLORS = "false";
             CARGO_LINKER = "clang";
-            CARGO_RUSTFLAGS = "-Clink-arg=-fuse-ld=${pkgs.mold}/bin/mold";
+            CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold";
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
+            # RUSTFLAGS = CARGO_RUSTFLAGS;
           };
         in
         {
-          packages = rec {
-            default = rust-testing;
-            rust-testing =
-              pkgs.rustPlatform.buildRustPackage.override
-                {
-                  stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
-                }
-                {
+          packages =
+            let
+              inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
+            in
+            rec {
+              default = rust-testing;
+              rust-testing =
+                pkgs.rustPlatform.buildRustPackage {
                   pname = "rust-testing";
-                  inherit nativeBuildInputs buildInputs env;
-                  inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
+                  inherit
+                    nativeBuildInputs
+                    buildInputs
+                    env
+                    version
+                    ;
                   src = ./.;
                   cargoBuildFlags = "-p rust-testing";
                   cargoLock.lockFile = ./Cargo.lock;
+                  canUseMold = true;
                 };
-          };
-          devShells.default =
-            pkgs.mkShell.override
-              {
-                stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
-              }
-              {
-                inherit nativeBuildInputs buildInputs env;
-                name = "rust";
-                # Used for development and testing
-                packages = with pkgs; [
-                  typos
-                  gnumake
-                  process-compose
-                  cargo-watch
-                  nodePackages.typescript-language-server
-                  vscode-langservers-extracted
-                ];
+              # link: https://fasterthanli.me/series/building-a-rust-service-with-nix/part-11
+              image = pkgs.dockerTools.buildImage {
+                name = "ghcr.io/a1994sc/" + self'.packages.default.pname;
+                # https://discourse.nixos.org/t/passing-git-commit-hash-and-tag-to-build-with-flakes/11355/2
+                tag = version + "-" + (if (self ? shortRev) then self.shortRev else "dirty");
+                copyToRoot = [ self'.packages.default ];
+                # extraCommands = ''
+                #   # make sure /tmp exists
+                #   # mkdir -m 1777 /tmp
+                #   ls /bin
+                #   # ln -s ${self'.packages.default}/bin/${self'.packages.default.pname} /bin/${self'.packages.default.pname}
+                # '';
+                config = {
+                  Cmd = [ "${self'.packages.default}/bin/${self'.packages.default.pname}" ];
+                  Labels = {
+                    "org.opencontainers.image.description" = "Playground";
+                    "org.opencontainers.image.source" = "https://github.com/a1994sc/rust-adventure";
+                    "org.opencontainers.image.version" = version;
+                    "org.opencontainers.image.licenses" = "MIT";
+                    "org.opencontainers.image.revision" = (if (self ? rev) then self.rev else "dirty");
+                  };
+                };
               };
+            };
+          devShells.default =
+            pkgs.mkShell {
+              inherit nativeBuildInputs buildInputs env;
+              name = "rust";
+              # Used for development and testing
+              packages = with pkgs; [
+                typos
+                gnumake
+                clippy
+                cargo-machete
+                process-compose
+                cargo-watch
+                nodePackages.typescript-language-server
+                vscode-langservers-extracted
+              ];
+            };
           formatter = treefmtEval.config.build.wrapper;
           process-compose.redis-service =
             { config, ... }:
