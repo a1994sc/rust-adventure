@@ -1,5 +1,5 @@
 [package]
-authors = ["Allen Conlon <allen@conlon.dev"]
+authors = [ "Allen Conlon <allen@conlon.dev" ]
 edition = "2021"
 name = "rust-testing"
 description = "A simple Rust project using Nix"
@@ -12,5 +12,10 @@ env_logger = "0.11.5"
 log = "0.4.22"
 rust-testing-lib = { path = "rust-testing-lib" }
 
-# [workspace]
-# members = [ "rust-testing-lib" ]
+[workspace]
+members = [ "rust-testing-lib" ]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+authors = [ "Allen Conlon <allen@conlon.dev" ]

@@ -44,8 +44,6 @@ pub mod linkage {
         }
     }
 
-    pub fn public_function() {}
-
     #[cfg(test)]
     mod test {
         use super::*;
