@@ -132,31 +132,28 @@
             rec {
               default = rust-testing;
               rust-testing =
-                pkgs.rustPlatform.buildRustPackage {
-                  pname = "rust-testing";
-                  inherit
-                    nativeBuildInputs
-                    buildInputs
-                    env
-                    version
-                    ;
-                  src = ./.;
-                  cargoBuildFlags = "-p rust-testing";
-                  cargoLock.lockFile = ./Cargo.lock;
-                  canUseMold = true;
-                };
+                pkgs.rustPlatform.buildRustPackage.override
+                  {
+                    stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
+                  }
+                  {
+                    pname = "rust-testing";
+                    inherit
+                      nativeBuildInputs
+                      buildInputs
+                      env
+                      version
+                      ;
+                    src = ./.;
+                    cargoBuildFlags = "-p rust-testing";
+                    cargoLock.lockFile = ./Cargo.lock;
+                  };
               # link: https://fasterthanli.me/series/building-a-rust-service-with-nix/part-11
               image = pkgs.dockerTools.buildImage {
                 name = "ghcr.io/a1994sc/" + self'.packages.default.pname;
                 # https://discourse.nixos.org/t/passing-git-commit-hash-and-tag-to-build-with-flakes/11355/2
                 tag = version + "-" + (if (self ? shortRev) then self.shortRev else "dirty");
                 copyToRoot = [ self'.packages.default ];
-                # extraCommands = ''
-                #   # make sure /tmp exists
-                #   # mkdir -m 1777 /tmp
-                #   ls /bin
-                #   # ln -s ${self'.packages.default}/bin/${self'.packages.default.pname} /bin/${self'.packages.default.pname}
-                # '';
                 config = {
                   Cmd = [ "${self'.packages.default}/bin/${self'.packages.default.pname}" ];
                   Labels = {
@@ -164,27 +161,31 @@
                     "org.opencontainers.image.source" = "https://github.com/a1994sc/rust-adventure";
                     "org.opencontainers.image.version" = version;
                     "org.opencontainers.image.licenses" = "MIT";
-                    "org.opencontainers.image.revision" = (if (self ? rev) then self.rev else "dirty");
+                    "org.opencontainers.image.revision" = if (self ? rev) then self.rev else "dirty";
                   };
                 };
               };
             };
           devShells.default =
-            pkgs.mkShell {
-              inherit nativeBuildInputs buildInputs env;
-              name = "rust";
-              # Used for development and testing
-              packages = with pkgs; [
-                typos
-                gnumake
-                clippy
-                cargo-machete
-                process-compose
-                cargo-watch
-                nodePackages.typescript-language-server
-                vscode-langservers-extracted
-              ];
-            };
+            pkgs.mkShell.override
+              {
+                stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
+              }
+              {
+                inherit nativeBuildInputs buildInputs env;
+                name = "rust";
+                # Used for development and testing
+                packages = with pkgs; [
+                  typos
+                  gnumake
+                  clippy
+                  cargo-machete
+                  process-compose
+                  cargo-watch
+                  nodePackages.typescript-language-server
+                  vscode-langservers-extracted
+                ];
+              };
           formatter = treefmtEval.config.build.wrapper;
           process-compose.redis-service =
             { config, ... }:

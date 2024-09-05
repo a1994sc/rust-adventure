@@ -89,11 +89,11 @@
     "rust-analyzer-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1725296863,
-        "narHash": "sha256-48BG4uhr6uj4yRPOWyeb9k1btmaGTV2Q3JoOs1Db/Cc=",
+        "lastModified": 1725357573,
+        "narHash": "sha256-IerRr71zXaJwZnpQiwNreTnUgEebeSQopaAymPSCDpY=",
         "ref": "refs/tags/nightly",
-        "rev": "304e5f58cdcdaeb6f005198e5e07f9ead0e03d34",
-        "revCount": 31429,
+        "rev": "b10dd83c2eebe41bb2804340caa392b16cf20f70",
+        "revCount": 31437,
         "type": "git",
         "url": "https://github.com/rust-lang/rust-analyzer"
       },
@@ -105,11 +105,11 @@
     },
     "services-flake": {
       "locked": {
-        "lastModified": 1725150740,
-        "narHash": "sha256-vUEy+hr1gK4dl72WNy/Ss0AEDVmAqF4T1BKS0jmwCAw=",
+        "lastModified": 1725449456,
+        "narHash": "sha256-mvH1p/erwHQxOB67UWb6wlgEwRxY7IeXdbKnZ7vFuMQ=",
         "ref": "refs/heads/main",
-        "rev": "113f8cbe962720d7d1d76d04700f3d441dada9f6",
-        "revCount": 335,
+        "rev": "e88a85265dc370fa760111a7b7f1f7fb2e4f5706",
+        "revCount": 336,
         "type": "git",
         "url": "https://github.com/juspay/services-flake"
       },
