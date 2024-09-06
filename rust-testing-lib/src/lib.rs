@@ -1,6 +1,3 @@
-#![crate_type = "lib"]
-#![crate_name = "rust_testing_lib"]
-
 pub mod linkage {
     use serde::{Deserialize, Serialize};
 
