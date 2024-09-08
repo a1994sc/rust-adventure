@@ -20,5 +20,5 @@ jobs:
           substituters = https://cache.garnix.io?priority=41 https://cache.nixos.org/
     - uses: yaxitech/nix-install-pkgs-action@cb7d5282f5fc06f049e1098bf4ea522a2287dc73 # v4
       with:
-        packages: "github:srid/nixci"
-    - run: nixci build
+        packages: "github:juspay/omnix"
+    - run: om ci

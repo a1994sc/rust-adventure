@@ -116,28 +116,28 @@
           ];
           buildInputs = with pkgs; [
             openssl
+            cargo-cross
           ];
           env = {
             CARGO_LINKER = "clang";
             CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold";
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
-            # RUSTFLAGS = CARGO_RUSTFLAGS;
+            RUSTFLAGS = "-C relocation-model=static -C strip=symbols";
           };
         in
         {
           packages =
             let
-              inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version;
+              inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version name;
             in
-            rec {
-              default = rust-testing;
-              rust-testing =
+            {
+              default =
                 pkgs.rustPlatform.buildRustPackage.override
                   {
                     stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
                   }
                   {
-                    pname = "rust-testing";
+                    pname = name;
                     inherit
                       nativeBuildInputs
                       buildInputs
@@ -145,19 +145,22 @@
                       version
                       ;
                     src = ./.;
-                    cargoBuildFlags = "-p rust-testing";
+                    cargoBuildFlags = "-p ${name}";
                     cargoLock.lockFile = ./Cargo.lock;
                   };
               # link: https://fasterthanli.me/series/building-a-rust-service-with-nix/part-11
               image = pkgs.dockerTools.buildImage {
-                name = "ghcr.io/a1994sc/" + self'.packages.default.pname;
+                name = "ghcr.io/a1994sc/rust/" + self'.packages.default.pname;
                 # https://discourse.nixos.org/t/passing-git-commit-hash-and-tag-to-build-with-flakes/11355/2
                 tag = version + "-" + (if (self ? shortRev) then self.shortRev else "dirty");
-                copyToRoot = [ self'.packages.default ];
+                copyToRoot = pkgs.runCommand "project" { } ''
+                    mkdir -p $out/bin
+                    cp ${self'.packages.default}/bin/${self'.packages.default.pname} $out/bin
+                  '';
                 config = {
-                  Cmd = [ "${self'.packages.default}/bin/${self'.packages.default.pname}" ];
+                  Cmd = [ "/bin/${self'.packages.default.pname}" ];
                   Labels = {
-                    "org.opencontainers.image.description" = "Playground";
+                    "org.opencontainers.image.description" = "Playground application of ${name}";
                     "org.opencontainers.image.source" = "https://github.com/a1994sc/rust-adventure";
                     "org.opencontainers.image.version" = version;
                     "org.opencontainers.image.licenses" = "MIT";
@@ -193,7 +196,6 @@
               imports = [
                 inputs.services-flake.processComposeModules.default
               ];
-              # services.redis-cluster."cluster1".enable = true;
               services.redis."redis".enable = true;
             };
         };
