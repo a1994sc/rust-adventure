@@ -129,6 +129,20 @@
           packages =
             let
               inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version name;
+              # https://discourse.nixos.org/t/passing-git-commit-hash-and-tag-to-build-with-flakes/11355/2
+              tag = version + "-" + (if (self ? shortRev) then self.shortRev else "dirty");
+              config = {
+                Cmd = [ "/bin/${self'.packages.default.pname}" ];
+                Labels = {
+                  "org.opencontainers.image.description" = "Playground application of ${name}";
+                  "org.opencontainers.image.source" = "https://github.com/a1994sc/rust-adventure";
+                  "org.opencontainers.image.version" = version;
+                  "org.opencontainers.image.licenses" = "MIT";
+                  "org.opencontainers.image.revision" = if (self ? rev) then self.rev else "dirty";
+                };
+              };
+              uid = 60000;
+              gid = 60000;
             in
             {
               default =
@@ -148,25 +162,25 @@
                     cargoBuildFlags = "-p ${name}";
                     cargoLock.lockFile = ./Cargo.lock;
                   };
+              minImage = pkgs.dockerTools.streamLayeredImage {
+                inherit tag config uid gid;
+                name = "ghcr.io/a1994sc/rust/" + self'.packages.default.pname;
+                maxLayers = 2;
+                contents = [ self'.packages.default ];
+                # Any mkdir running in this step won't actually make it to the image,
+                # hence we use the tmpDir derivation in the contents
+                fakeRootCommands = ''
+                  find nix/store -maxdepth 1 ! -name "*-${self'.packages.default.pname}-*" -type d -delete
+                '';
+              };
               # link: https://fasterthanli.me/series/building-a-rust-service-with-nix/part-11
               image = pkgs.dockerTools.buildImage {
+                inherit tag config uid gid;
                 name = "ghcr.io/a1994sc/rust/" + self'.packages.default.pname;
-                # https://discourse.nixos.org/t/passing-git-commit-hash-and-tag-to-build-with-flakes/11355/2
-                tag = version + "-" + (if (self ? shortRev) then self.shortRev else "dirty");
                 copyToRoot = pkgs.runCommand "project" { } ''
-                    mkdir -p $out/bin
-                    cp ${self'.packages.default}/bin/${self'.packages.default.pname} $out/bin
-                  '';
-                config = {
-                  Cmd = [ "/bin/${self'.packages.default.pname}" ];
-                  Labels = {
-                    "org.opencontainers.image.description" = "Playground application of ${name}";
-                    "org.opencontainers.image.source" = "https://github.com/a1994sc/rust-adventure";
-                    "org.opencontainers.image.version" = version;
-                    "org.opencontainers.image.licenses" = "MIT";
-                    "org.opencontainers.image.revision" = if (self ? rev) then self.rev else "dirty";
-                  };
-                };
+                  mkdir -p $out/bin
+                  cp ${self'.packages.default}/bin/${self'.packages.default.pname} $out/bin
+                '';
               };
             };
           devShells.default =
