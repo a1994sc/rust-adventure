@@ -4,24 +4,24 @@
   inputs = {
     # keep-sorted start block=yes case=no
     fenix = {
-      url = "git+https://github.com/nix-community/fenix";
+      url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-analyzer-src.follows = "rust-analyzer-src";
     };
     flake-parts = {
-      url = "git+https://github.com/hercules-ci/flake-parts";
+      url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
-    nixpkgs.url = "git+https://github.com/nixos/nixpkgs?ref=nixpkgs-unstable";
-    process-compose-flake.url = "git+https://github.com/Platonic-Systems/process-compose-flake";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     rust-analyzer-src = {
       flake = false;
-      url = "git+https://github.com/rust-lang/rust-analyzer?ref=refs/tags/nightly";
+      url = "github:rust-lang/rust-analyzer/refs/tags/nightly";
     };
-    services-flake.url = "git+https://github.com/juspay/services-flake";
-    systems.url = "git+https://github.com/nix-systems/default";
+    services-flake.url = "github:juspay/services-flake";
+    systems.url = "github:nix-systems/default";
     treefmt-nix = {
-      url = "git+https://github.com/numtide/treefmt-nix";
+      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # keep-sorted end
@@ -51,13 +51,13 @@
             inherit system;
             overlays = [ inputs.fenix.overlays.default ];
           };
-          f-core = inputs.fenix.packages.${system};
-          f-wasm =
-            with inputs.fenix.packages.${system};
-            combine [
-              stable.toolchain
-              targets.wasm32-unknown-unknown.stable.rust-std
-            ];
+          # f-core = inputs.fenix.packages.${system};
+          # f-wasm =
+          #   with inputs.fenix.packages.${system};
+          #   combine [
+          #     stable.toolchain
+          #     targets.wasm32-unknown-unknown.stable.rust-std
+          #   ];
           treefmtEval = inputs.treefmt-nix.lib.evalModule pkgs (
             { pkgs, ... }:
             {
@@ -108,7 +108,7 @@
             }
           );
           nativeBuildInputs = with pkgs; [
-            f-core.stable.toolchain
+            inputs.fenix.packages.${system}.stable.toolchain
             pkg-config
             # Use mold for faster linking
             mold
@@ -130,19 +130,22 @@
             let
               inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version name;
               # https://discourse.nixos.org/t/passing-git-commit-hash-and-tag-to-build-with-flakes/11355/2
-              tag = version + "-" + (if (self ? shortRev) then self.shortRev else "dirty");
-              config = {
-                Cmd = [ "/bin/${self'.packages.default.pname}" ];
-                Labels = {
-                  "org.opencontainers.image.description" = "Playground application of ${name}";
-                  "org.opencontainers.image.source" = "https://github.com/a1994sc/rust-adventure";
-                  "org.opencontainers.image.version" = version;
-                  "org.opencontainers.image.licenses" = "MIT";
-                  "org.opencontainers.image.revision" = if (self ? rev) then self.rev else "dirty";
+              img = {
+                name = "ghcr.io/a1994sc/rust/" + self'.packages.default.pname;
+                tag = version + "-" + (if (self ? shortRev) then self.shortRev else "dirty");
+                config = {
+                  Cmd = [ "/bin/${self'.packages.default.pname}" ];
+                  Labels = {
+                    "org.opencontainers.image.description" = "Playground application of ${name}";
+                    "org.opencontainers.image.source" = "https://github.com/a1994sc/rust-adventure";
+                    "org.opencontainers.image.version" = version;
+                    "org.opencontainers.image.licenses" = "MIT";
+                    "org.opencontainers.image.revision" = if (self ? rev) then self.rev else "dirty";
+                  };
                 };
+                uid = 60000;
+                gid = 60000;
               };
-              uid = 60000;
-              gid = 60000;
             in
             {
               default =
@@ -162,21 +165,20 @@
                     cargoBuildFlags = "-p ${name}";
                     cargoLock.lockFile = ./Cargo.lock;
                   };
-              minImage = pkgs.dockerTools.streamLayeredImage {
-                inherit tag config uid gid;
-                name = "ghcr.io/a1994sc/rust/" + self'.packages.default.pname;
-                maxLayers = 2;
-                contents = [ self'.packages.default ];
-                # Any mkdir running in this step won't actually make it to the image,
-                # hence we use the tmpDir derivation in the contents
-                fakeRootCommands = ''
-                  find nix/store -maxdepth 1 ! -name "*-${self'.packages.default.pname}-*" -type d -delete
-                '';
-              };
+              # # Doesn't work that well, but want to eventually get an image with just the static binary in it......
+              # minImage = pkgs.dockerTools.streamLayeredImage {
+              #   inherit (img) tag config uid gid name;
+              #   maxLayers = 2;
+              #   contents = [ self'.packages.default ];
+              #   # Any mkdir running in this step won't actually make it to the image,
+              #   # hence we use the tmpDir derivation in the contents
+              #   fakeRootCommands = ''
+              #     find nix/store -maxdepth 1 ! -name "*-${self'.packages.default.pname}-*" -type d -delete
+              #   '';
+              # };
               # link: https://fasterthanli.me/series/building-a-rust-service-with-nix/part-11
               image = pkgs.dockerTools.buildImage {
-                inherit tag config uid gid;
-                name = "ghcr.io/a1994sc/rust/" + self'.packages.default.pname;
+                inherit (img) tag config uid gid name;
                 copyToRoot = pkgs.runCommand "project" { } ''
                   mkdir -p $out/bin
                   cp ${self'.packages.default}/bin/${self'.packages.default.pname} $out/bin

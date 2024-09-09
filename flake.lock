@@ -10,17 +10,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1725777030,
-        "narHash": "sha256-mieHgCmdbr/Tok3djbEVnNyLtnxEv5PHngN8wBu+RJA=",
-        "ref": "refs/heads/main",
-        "rev": "7c59cc75e7d2328753b00766ab0a78a075609b25",
-        "revCount": 1993,
-        "type": "git",
-        "url": "https://github.com/nix-community/fenix"
+        "lastModified": 1725863722,
+        "narHash": "sha256-YBcCMVp9RrN2rgqhsMhpu/iw7L8z17N4fp4A129IZ3w=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "c30b094741641eef4a7200a5d52a8a16f0f345c6",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "https://github.com/nix-community/fenix"
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
       }
     },
     "flake-parts": {
@@ -32,46 +32,46 @@
       "locked": {
         "lastModified": 1725234343,
         "narHash": "sha256-+ebgonl3NbiKD2UD0x4BszCZQ6sTfL4xioaM49o5B3Y=",
-        "ref": "refs/heads/main",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
         "rev": "567b938d64d4b4112ee253b9274472dc3a346eb6",
-        "revCount": 328,
-        "type": "git",
-        "url": "https://github.com/hercules-ci/flake-parts"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "https://github.com/hercules-ci/flake-parts"
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "type": "github"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1725784592,
-        "narHash": "sha256-+q9YZ4HWL50epIkN7o25UmiPx9kHylkpwMwF2ynSdcc=",
-        "ref": "nixpkgs-unstable",
-        "rev": "17fb773308a8558abaa05b5df71cdaf3e5208e66",
-        "revCount": 678160,
-        "type": "git",
-        "url": "https://github.com/nixos/nixpkgs"
+        "lastModified": 1725816686,
+        "narHash": "sha256-0Kq2MkQ/sQX1rhWJ/ySBBQlBJBUK8mPMDcuDhhdBkSU=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "add0443ee587a0c44f22793b8c8649a0dbc3bb00",
+        "type": "github"
       },
       "original": {
+        "owner": "nixos",
         "ref": "nixpkgs-unstable",
-        "type": "git",
-        "url": "https://github.com/nixos/nixpkgs"
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "process-compose-flake": {
       "locked": {
         "lastModified": 1724606023,
         "narHash": "sha256-rdGeNa/lCS8E1lXzPqgl+vZUUvnbEZT11Bqkx5jfYug=",
-        "ref": "refs/heads/main",
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
         "rev": "f6ce9481df9aec739e4e06b67492401a5bb4f0b1",
-        "revCount": 130,
-        "type": "git",
-        "url": "https://github.com/Platonic-Systems/process-compose-flake"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "https://github.com/Platonic-Systems/process-compose-flake"
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
+        "type": "github"
       }
     },
     "root": {
@@ -91,46 +91,46 @@
       "locked": {
         "lastModified": 1725630423,
         "narHash": "sha256-gNCLk3Zg7JlAwmWbVHTH6f3+iqdeQ4fheOotCZy8x5M=",
-        "ref": "refs/tags/nightly",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
         "rev": "08c7bbc2dbe4dcc8968484f1a0e1e6fe7a1d4f6d",
-        "revCount": 31464,
-        "type": "git",
-        "url": "https://github.com/rust-lang/rust-analyzer"
+        "type": "github"
       },
       "original": {
+        "owner": "rust-lang",
         "ref": "refs/tags/nightly",
-        "type": "git",
-        "url": "https://github.com/rust-lang/rust-analyzer"
+        "repo": "rust-analyzer",
+        "type": "github"
       }
     },
     "services-flake": {
       "locked": {
         "lastModified": 1725776884,
         "narHash": "sha256-3NxsWGgCp6x8ZI8Pskw3bwKkCB5lKbdVnY5nhfiVbZw=",
-        "ref": "refs/heads/main",
+        "owner": "juspay",
+        "repo": "services-flake",
         "rev": "37176c49c20a01999abdf256c9e71bf69a372329",
-        "revCount": 345,
-        "type": "git",
-        "url": "https://github.com/juspay/services-flake"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "https://github.com/juspay/services-flake"
+        "owner": "juspay",
+        "repo": "services-flake",
+        "type": "github"
       }
     },
     "systems": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "ref": "refs/heads/main",
+        "owner": "nix-systems",
+        "repo": "default",
         "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "revCount": 3,
-        "type": "git",
-        "url": "https://github.com/nix-systems/default"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "https://github.com/nix-systems/default"
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
       }
     },
     "treefmt-nix": {
@@ -142,15 +142,15 @@
       "locked": {
         "lastModified": 1725271838,
         "narHash": "sha256-VcqxWT0O/gMaeWTTjf1r4MOyG49NaNxW4GHTO3xuThE=",
-        "ref": "refs/heads/main",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
         "rev": "9fb342d14b69aefdf46187f6bb80a4a0d97007cd",
-        "revCount": 317,
-        "type": "git",
-        "url": "https://github.com/numtide/treefmt-nix"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "https://github.com/numtide/treefmt-nix"
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "type": "github"
       }
     }
   },
