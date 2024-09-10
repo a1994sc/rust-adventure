@@ -3,20 +3,15 @@
 
   inputs = {
     # keep-sorted start block=yes case=no
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.rust-analyzer-src.follows = "rust-analyzer-src";
-    };
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
-    rust-analyzer-src = {
-      flake = false;
-      url = "github:rust-lang/rust-analyzer/refs/tags/nightly";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     services-flake.url = "github:juspay/services-flake";
     systems.url = "github:nix-systems/default";
@@ -49,15 +44,8 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            overlays = [ inputs.fenix.overlays.default ];
+            overlays = [ (import inputs.rust-overlay) ];
           };
-          # f-core = inputs.fenix.packages.${system};
-          # f-wasm =
-          #   with inputs.fenix.packages.${system};
-          #   combine [
-          #     stable.toolchain
-          #     targets.wasm32-unknown-unknown.stable.rust-std
-          #   ];
           treefmtEval = inputs.treefmt-nix.lib.evalModule pkgs (
             { pkgs, ... }:
             {
@@ -108,7 +96,11 @@
             }
           );
           nativeBuildInputs = with pkgs; [
-            inputs.fenix.packages.${system}.stable.toolchain
+            # (rust-bin.stable.latest.default.override {
+            #   targets = [ "x86_64-unknown-linux-musl" "aarch64-unknown-linux-musl" ];
+            # })
+            rust-bin.stable.latest.default
+            gcc
             pkg-config
             # Use mold for faster linking
             mold
@@ -121,8 +113,8 @@
           env = {
             CARGO_LINKER = "clang";
             CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold";
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
-            RUSTFLAGS = "-C relocation-model=static -C strip=symbols";
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (buildInputs ++ nativeBuildInputs);
+            # RUSTFLAGS = "-C relocation-model=static -C strip=symbols";
           };
         in
         {
@@ -178,7 +170,13 @@
               # };
               # link: https://fasterthanli.me/series/building-a-rust-service-with-nix/part-11
               image = pkgs.dockerTools.buildImage {
-                inherit (img) tag config uid gid name;
+                inherit (img)
+                  tag
+                  config
+                  uid
+                  gid
+                  name
+                  ;
                 copyToRoot = pkgs.runCommand "project" { } ''
                   mkdir -p $out/bin
                   cp ${self'.packages.default}/bin/${self'.packages.default.pname} $out/bin
