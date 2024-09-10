@@ -99,7 +99,7 @@
             # (rust-bin.stable.latest.default.override {
             #   targets = [ "x86_64-unknown-linux-musl" "aarch64-unknown-linux-musl" ];
             # })
-            rust-bin.stable.latest.default
+            rust-bin.stable.latest.complete
             gcc
             pkg-config
             # Use mold for faster linking
