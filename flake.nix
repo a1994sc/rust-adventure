@@ -100,25 +100,23 @@
             }
           );
           nativeBuildInputs = with pkgs; [
-            # (rust-bin.stable.latest.default.override {
-            #   targets = [ "x86_64-unknown-linux-musl" "aarch64-unknown-linux-musl" ];
-            # })
-            rust-bin.stable.latest.complete
-            gcc
-            pkg-config
-            # Use mold for faster linking
-            mold
-            clang_15
+            (rust-bin.stable.latest.complete.override {
+              targets = [
+                "x86_64-unknown-linux-musl"
+                "aarch64-unknown-linux-musl"
+              ];
+            })
           ];
           buildInputs = with pkgs; [
+            gnumake
             openssl
-            cargo-cross
           ];
-          env = {
-            CARGO_LINKER = "clang";
-            CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold";
+          env = rec {
+            CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+            CARGO_LINKER = "${pkgs.clang_18}/bin/clang";
+            CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold " + RUSTFLAGS;
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (buildInputs ++ nativeBuildInputs);
-            # RUSTFLAGS = "-C relocation-model=static -C strip=symbols";
+            RUSTFLAGS = "-C target-feature=+crt-static -C strip=symbols";
           };
           preBuild = ''
             cp -f ${inputs.zarf-dev}/zarf.schema.json schema/zarf.schema.json
@@ -151,6 +149,7 @@
               default =
                 pkgs.rustPlatform.buildRustPackage.override
                   {
+                    # inherit (pkgs.pkgsMusl) stdenv;
                     stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
                   }
                   {
@@ -195,6 +194,7 @@
           devShells.default =
             pkgs.mkShell.override
               {
+                # inherit (pkgs.pkgsMusl) stdenv;
                 stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
               }
               {
