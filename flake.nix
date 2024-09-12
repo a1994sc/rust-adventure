@@ -19,6 +19,10 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    zarf-dev = {
+      url = "github:zarf-dev/zarf/v0.39.0";
+      flake = false;
+    };
     # keep-sorted end
   };
 
@@ -61,7 +65,7 @@
                     in
                     [
                       (dprintWasmPluginUrl "json" "0.19.3")
-                      (dprintWasmPluginUrl "markdown" "0.17.0")
+                      (dprintWasmPluginUrl "markdown" "0.17.8")
                       (dprintWasmPluginUrl "toml" "0.6.2")
                     ];
                 };
@@ -116,6 +120,10 @@
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (buildInputs ++ nativeBuildInputs);
             # RUSTFLAGS = "-C relocation-model=static -C strip=symbols";
           };
+          preBuild = ''
+            cp -f ${inputs.zarf-dev}/zarf.schema.json schema/zarf.schema.json
+          '';
+          scrtipt = with pkgs; [ (writeShellScriptBin "gather-zarf-schema" preBuild) ];
         in
         {
           packages =
@@ -128,7 +136,7 @@
                 config = {
                   Cmd = [ "/bin/${self'.packages.default.pname}" ];
                   Labels = {
-                    "org.opencontainers.image.description" = "Playground application of ${name}";
+                    "org.opencontainers.image.description" = "OCI image of ${name}";
                     "org.opencontainers.image.source" = "https://github.com/a1994sc/rust-adventure";
                     "org.opencontainers.image.version" = version;
                     "org.opencontainers.image.licenses" = "MIT";
@@ -152,22 +160,12 @@
                       buildInputs
                       env
                       version
+                      preBuild
                       ;
                     src = ./.;
                     cargoBuildFlags = "-p ${name}";
                     cargoLock.lockFile = ./Cargo.lock;
                   };
-              # # Doesn't work that well, but want to eventually get an image with just the static binary in it......
-              # minImage = pkgs.dockerTools.streamLayeredImage {
-              #   inherit (img) tag config uid gid name;
-              #   maxLayers = 2;
-              #   contents = [ self'.packages.default ];
-              #   # Any mkdir running in this step won't actually make it to the image,
-              #   # hence we use the tmpDir derivation in the contents
-              #   fakeRootCommands = ''
-              #     find nix/store -maxdepth 1 ! -name "*-${self'.packages.default.pname}-*" -type d -delete
-              #   '';
-              # };
               # link: https://fasterthanli.me/series/building-a-rust-service-with-nix/part-11
               image = pkgs.dockerTools.buildImage {
                 inherit (img)
@@ -192,16 +190,20 @@
                 inherit nativeBuildInputs buildInputs env;
                 name = "rust";
                 # Used for development and testing
-                packages = with pkgs; [
-                  typos
-                  gnumake
-                  clippy
-                  cargo-machete
-                  process-compose
-                  cargo-watch
-                  nodePackages.typescript-language-server
-                  vscode-langservers-extracted
-                ];
+                packages =
+                  with pkgs;
+                  [
+                    typos
+                    gnumake
+                    clippy
+                    cargo-machete
+                    process-compose
+                    cargo-watch
+                    cargo-expand
+                    nodePackages.typescript-language-server
+                    vscode-langservers-extracted
+                  ]
+                  ++ scrtipt;
               };
           formatter = treefmtEval.config.build.wrapper;
           process-compose.redis-service =

@@ -3,3 +3,5 @@
 /result*
 .direnv
 *.tar.gz
+*.txt
+schema/zarf.schema.json

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/PackageImage",
+  "definitions": {
+    "PackageImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "package-image-list": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/PackageImageList"
+          }
+        }
+      },
+      "required": [
+        "package-image-list"
+      ],
+      "title": "PackageImage"
+    },
+    "PackageImageList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "chart": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "images",
+        "version"
+      ],
+      "title": "PackageImageList"
+    }
+  }
+}
