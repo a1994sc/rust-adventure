@@ -180,6 +180,17 @@
                   cp ${self'.packages.default}/bin/${self'.packages.default.pname} $out/bin
                 '';
               };
+              # CI packages
+              version = pkgs.writeText "version" ''
+                ${img.name}:${img.tag}
+              '';
+              versionTag = pkgs.writeText "version" ''
+                ${img.name}:${version}
+              '';
+              tag = self'.packages.image.override {
+                tag = version;
+                config.Labels."org.opencontainers.image.revision" = version;
+              };
             };
           devShells.default =
             pkgs.mkShell.override

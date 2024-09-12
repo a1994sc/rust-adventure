@@ -1,3 +1,5 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
 name: "CI Nix"
 on:
   # Run only when pushing to master branch, and making PRs
@@ -11,6 +13,8 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
+    permissions:
+      packages: write
     steps:
     - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
     - uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
@@ -18,7 +22,24 @@ jobs:
         extra-conf: |
           trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
           substituters = https://cache.garnix.io?priority=41 https://cache.nixos.org/
-    - uses: yaxitech/nix-install-pkgs-action@cb7d5282f5fc06f049e1098bf4ea522a2287dc73 # v4
+    # - uses: yaxitech/nix-install-pkgs-action@cb7d5282f5fc06f049e1098bf4ea522a2287dc73 # v4
+    #   with:
+    #     packages: "github:juspay/omnix"
+    # - run: om ci
+    - name: Setup CI environment
+      id: ci-env
+      run: |
+        nix build .#version
+        echo "version=$(cat result)" >>$GITHUB_OUTPUT
+    - name: Login to Github Container Registry
+      uses: docker/login-action@v3
       with:
-        packages: "github:juspay/omnix"
-    - run: om ci
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - env:
+        IMAGE: ${{ steps.ci-env.outputs.version }}
+      run: |
+        nix build .#image
+        docker load -i result
+        docker push $IMAGE
