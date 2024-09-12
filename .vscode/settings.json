@@ -7,5 +7,11 @@
     "env": {
       "PROJ_DIR": "${workspaceRoot}"
     }
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/yamllint.json": [
+      "*.yaml",
+      "*.yml"
+    ]
   }
 }
