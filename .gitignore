@@ -1,6 +1,11 @@
-/data
+# ignore cargo build directory
 /target
+
+# ignore nix config directories/files
 /result*
 .direnv
+.pre-commit-config.yaml
+
+# misc
 *.tar.gz
 *.txt

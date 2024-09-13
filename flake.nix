@@ -8,6 +8,11 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    pre-commit-hooks = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "nixpkgs";
+      url = "github:/cachix/pre-commit-hooks.nix";
+    };
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -99,7 +104,9 @@
               };
             }
           );
-          nativeBuildInputs = with pkgs; [
+          buildInputs = with pkgs; [
+            openssl
+            buildPackages.pkg-config
             (rust-bin.stable.latest.complete.override {
               targets = [
                 "x86_64-unknown-linux-musl"
@@ -107,15 +114,12 @@
               ];
             })
           ];
-          buildInputs = with pkgs; [
-            gnumake
-            openssl
-          ];
           env = rec {
-            CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+            CARGO_BUILD_TARGET =
+              (if (lib.hasPrefix "x86_64" system) then "x86_64-unknown" else "aarch64-unknown") + "-linux-musl";
             CARGO_LINKER = "${pkgs.clang_18}/bin/clang";
             CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold " + RUSTFLAGS;
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (buildInputs ++ nativeBuildInputs);
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
             RUSTFLAGS = "-C target-feature=+crt-static -C strip=symbols";
           };
           preBuild = ''
@@ -126,7 +130,7 @@
         {
           packages =
             let
-              inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version name;
+              inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version name authors;
               # https://discourse.nixos.org/t/passing-git-commit-hash-and-tag-to-build-with-flakes/11355/2
               img = {
                 name = "ghcr.io/a1994sc/rust/" + self'.packages.default.pname;
@@ -139,23 +143,23 @@
                     "org.opencontainers.image.version" = version;
                     "org.opencontainers.image.licenses" = "MIT";
                     "org.opencontainers.image.revision" = if (self ? rev) then self.rev else "dirty";
+                    "org.opencontainers.image.authors" = (lib.strings.trim (builtins.concatStringsSep ", " authors));
                   };
                 };
                 uid = 60000;
                 gid = 60000;
+                copyToRoot = self'.packages.default;
               };
             in
             {
               default =
-                pkgs.rustPlatform.buildRustPackage.override
+                pkgs.pkgsStatic.rustPlatform.buildRustPackage.override
                   {
-                    # inherit (pkgs.pkgsMusl) stdenv;
                     stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
                   }
                   {
                     pname = name;
                     inherit
-                      nativeBuildInputs
                       buildInputs
                       env
                       version
@@ -173,13 +177,10 @@
                   uid
                   gid
                   name
+                  copyToRoot
                   ;
-                copyToRoot = pkgs.runCommand "project" { } ''
-                  mkdir -p $out/bin
-                  cp ${self'.packages.default}/bin/${self'.packages.default.pname} $out/bin
-                '';
               };
-              # CI packages
+              # CI "packages"
               version = pkgs.writeText "version" ''
                 ${img.name}:${img.tag}
               '';
@@ -194,11 +195,11 @@
           devShells.default =
             pkgs.mkShell.override
               {
-                # inherit (pkgs.pkgsMusl) stdenv;
                 stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
               }
               {
-                inherit nativeBuildInputs buildInputs env;
+                inherit buildInputs env;
+                inherit (self'.packages.default) nativeBuildInputs;
                 name = "rust";
                 # Used for development and testing
                 packages =
@@ -215,8 +216,30 @@
                     vscode-langservers-extracted
                   ]
                   ++ scrtipt;
+                # When using the "pre-commit" shellHook, it does not load the `env` attributes... so we need to load them manually, but only for the devShell(s).
+                shellHook =
+                  self'.checks.pre-commit-check.shellHook
+                  + "\n"
+                  + (builtins.concatStringsSep "\n" (
+                    lib.attrsets.mapAttrsToList (k: v: "export ${k}=${lib.strings.escapeShellArg v}") env
+                  ));
               };
           formatter = treefmtEval.config.build.wrapper;
+          checks = {
+            pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
+              src = ./.;
+              hooks = {
+                # keep-sorted start case=no
+                check-executables-have-shebangs.enable = true;
+                check-shebang-scripts-are-executable.enable = true;
+                detect-private-keys.enable = true;
+                end-of-file-fixer.enable = true;
+                nixfmt-rfc-style.enable = true;
+                trim-trailing-whitespace.enable = true;
+                # keep-sorted end
+              };
+            };
+          };
           process-compose.redis-service =
             { config, ... }:
             {

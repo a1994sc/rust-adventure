@@ -12,3 +12,10 @@ serde = { version = "1.0.210", features = ["derive"]}
 serde_yaml_ng = "0.10"
 schemars = "0.8"
 typify = "0.1.0"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

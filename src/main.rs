@@ -42,13 +42,14 @@ struct Args {
     // bb_version: String,
 }
 
+const ZARF_SCHEMA: &str = include_str!("../schema/zarf.schema.json");
+
 fn main() {
-    let zarf_schema: &str = include_str!("../schema/zarf.schema.json");
     let args: Args = Args::parse();
 
     for _ in 0..args.count {
         println!("Hello {}!", args.name);
     }
 
-    println!("{}", zarf_schema.len());
+    println!("{}", ZARF_SCHEMA.len());
 }
