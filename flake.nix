@@ -143,7 +143,7 @@
                     "org.opencontainers.image.version" = version;
                     "org.opencontainers.image.licenses" = "MIT";
                     "org.opencontainers.image.revision" = if (self ? rev) then self.rev else "dirty";
-                    "org.opencontainers.image.authors" = (lib.strings.trim (builtins.concatStringsSep ", " authors));
+                    "org.opencontainers.image.authors" = lib.strings.trim (builtins.concatStringsSep ", " authors);
                   };
                 };
                 uid = 60000;
@@ -237,6 +237,12 @@
                 nixfmt-rfc-style.enable = true;
                 trim-trailing-whitespace.enable = true;
                 # keep-sorted end
+                file-format = {
+                  enable = true;
+                  name = "Run Nix format";
+                  entry = "nix fmt";
+                  pass_filenames = false;
+                };
               };
             };
           };
