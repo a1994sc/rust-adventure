@@ -3,6 +3,11 @@
 
   inputs = {
     # keep-sorted start block=yes case=no
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.rust-analyzer-src.follows = "rust-analyzer-src";
+    };
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -14,9 +19,9 @@
       url = "github:/cachix/pre-commit-hooks.nix";
     };
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
+    rust-analyzer-src = {
+      flake = false;
+      url = "github:rust-lang/rust-analyzer/refs/tags/nightly";
     };
     services-flake.url = "github:juspay/services-flake";
     systems.url = "github:nix-systems/default";
@@ -53,7 +58,7 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            overlays = [ (import inputs.rust-overlay) ];
+            overlays = [ inputs.fenix.overlays.default ];
           };
           treefmtEval = inputs.treefmt-nix.lib.evalModule pkgs (
             { pkgs, ... }:
@@ -104,19 +109,21 @@
               };
             }
           );
+          target =
+            (if (lib.hasPrefix "x86_64" system) then "x86_64-unknown" else "aarch64-unknown") + "-linux-musl";
+          fenix-musl =
+            with inputs.fenix.packages.${system};
+            combine [
+              stable.toolchain
+              targets."${target}".stable.rust-std
+            ];
           buildInputs = with pkgs; [
             openssl
             buildPackages.pkg-config
-            (rust-bin.stable.latest.complete.override {
-              targets = [
-                "x86_64-unknown-linux-musl"
-                "aarch64-unknown-linux-musl"
-              ];
-            })
           ];
+          nativeBuildInputs = [ fenix-musl ];
           env = rec {
-            CARGO_BUILD_TARGET =
-              (if (lib.hasPrefix "x86_64" system) then "x86_64-unknown" else "aarch64-unknown") + "-linux-musl";
+            CARGO_BUILD_TARGET = target;
             CARGO_LINKER = "${pkgs.clang_18}/bin/clang";
             CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold " + RUSTFLAGS;
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
@@ -164,6 +171,7 @@
                       env
                       version
                       preBuild
+                      nativeBuildInputs
                       ;
                     src = ./.;
                     cargoBuildFlags = "-p ${name}";
@@ -200,6 +208,7 @@
               {
                 inherit buildInputs env;
                 inherit (self'.packages.default) nativeBuildInputs;
+                # inputs.fenix.packages.${system}.stable.toolchain
                 name = "rust";
                 # Used for development and testing
                 packages =

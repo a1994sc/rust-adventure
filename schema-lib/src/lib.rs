@@ -24,16 +24,16 @@ pub mod linkage {
         }
     }
 
-    // pub fn separate(enc: Encoded) -> Decoded {
-    //     let pairf: f32= enc.id as f32;
-    //     let w: u32 = (((8.0 * pairf + 1.0).sqrt() - 1.0) / 2.0).floor() as u32;
-    //     let t: u32 = (num::pow(w, 2) + w) / 2;
+    pub fn separate(enc: Encoded) -> Decoded {
+        let pairf: f32 = enc.id as f32;
+        let w: u32 = (((8.0 * pairf + 1.0).sqrt() - 1.0) / 2.0).floor() as u32;
+        let t: u32 = (num::pow(w, 2) + w) / 2;
 
-    //     Decoded {
-    //         a: (w - (enc.id - t)),
-    //         b: (enc.id - t),
-    //     }
-    // }
+        Decoded {
+            a: (w - (enc.id - t)),
+            b: (enc.id - t),
+        }
+    }
 
     pub fn pair(dec: Decoded) -> Encoded {
         Encoded {
@@ -54,16 +54,18 @@ pub mod linkage {
             assert_eq!(pair(Decoded { a: 9, b: 17 }), Encoded { id: 368 });
         }
 
-        // #[test]
-        // fn test_separate() {
-        //     assert_eq!(separate(Encoded { id: 360 }).a, 17);
-        //     assert_eq!(separate(Encoded { id: 360 }).b, 9);
+        #[test]
+        fn test_separate() {
+            println!("{:?}", Encoded { id: 360 });
+            assert_eq!(separate(Encoded { id: 360 }).a, 17);
+            assert_eq!(separate(Encoded { id: 360 }).b, 9);
 
-        //     assert_eq!(separate(Encoded { id: 368 }).a, 9);
-        //     assert_eq!(separate(Encoded { id: 368 }).b, 17);
+            println!("{:?}", Encoded { id: 368 });
+            // assert_eq!(separate(Encoded { id: 368 }).a, 9);
+            // assert_eq!(separate(Encoded { id: 368 }).b, 17);
 
-        //     assert_eq!(separate(Encoded { id: 360 }), Decoded { a: 17, b: 9 });
-        //     assert_eq!(separate(Encoded { id: 368 }), Decoded { a: 9, b: 17 });
-        // }
+            // assert_eq!(separate(Encoded { id: 360 }), Decoded { a: 17, b: 9 });
+            // assert_eq!(separate(Encoded { id: 368 }), Decoded { a: 9, b: 17 });
+        }
     }
 }
