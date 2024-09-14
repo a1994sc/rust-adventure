@@ -212,6 +212,7 @@
                     process-compose
                     cargo-watch
                     cargo-expand
+                    cargo-typify
                     nodePackages.typescript-language-server
                     vscode-langservers-extracted
                   ]

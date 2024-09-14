@@ -1,55 +1,36 @@
-// use std::fs;
+extern crate schema_lib;
 
-// fn main() {
-//     let contents = fs::read_to_string("multiple-rules.yaml")
-//         .expect("Should have been able to read the file");
-
-//     let rule_file: RuleFile = serde_yaml_ng::from_str::<RuleFile>(&contents).unwrap();
-
-//     println!("{:#?}", rule_file)
-// }
-
-use serde::{Deserialize, Serialize};
-
-// struct to hold the entire rule file
-#[derive(Debug, Serialize, Deserialize)]
-struct RuleFile {
-    rules: Vec<Rule>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Rule {
-    id: String,
-    severity: String,
-    languages: Vec<String>,
-    dummy: Option<String>,
-}
-use clap::Parser;
+use clap::{Parser, Subcommand};
+use schema_lib::linkage::*;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(author, version, about, long_about = None)]
+#[command(propagate_version = true)]
 struct Args {
-    /// Name of the person to greet
-    #[arg(short = 'n', long)]
-    name: String,
-
-    /// Number of times to greet
-    #[arg(short = 'c', long, default_value_t = 1)]
-    count: u8,
-    // /// Version of the Big Bang to base the zarf.yaml file off
-    // #[arg(short = 'v', long = "bb-version")]
-    // bb_version: String,
+    #[command(subcommand)]
+    cmd: Commands,
 }
 
-const ZARF_SCHEMA: &str = include_str!("../schema/zarf.schema.json");
+#[derive(Debug, Subcommand)]
+enum Commands {
+    Pair { a: u32, b: u32 },
+}
+
+// const ZARF_SCHEMA: &str = include_str!("../schema/zarf.schema.json");
 
 fn main() {
     let args: Args = Args::parse();
 
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name);
+    match &args.cmd {
+        Commands::Pair { a, b } => {
+            println!("The ID is {:?}", pair(Decoded { a: *a, b: *b }).id);
+        }
     }
 
-    println!("{}", ZARF_SCHEMA.len());
+    // for _ in 0..args.count {
+    //     println!("Hello {}!", args.name);
+    // }
+
+    // println!("{}", ZARF_SCHEMA.len());
 }

@@ -10,8 +10,7 @@ license = "MIT"
 clap = { version = "4.5.17", features = ["derive"] }
 serde = { version = "1.0.210", features = ["derive"]}
 serde_yaml_ng = "0.10"
-schemars = "0.8"
-typify = "0.1.0"
+schema-lib = { path = "schema-lib" }
 
 [profile.release]
 opt-level = "z"
@@ -19,3 +18,11 @@ lto = true
 codegen-units = 1
 panic = "abort"
 strip = true
+
+[workspace]
+members = [ "schema-lib" ]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+authors = [ "Allen Conlon <allen@conlon.dev>" ]
