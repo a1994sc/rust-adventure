@@ -222,6 +222,7 @@
                     cargo-watch
                     cargo-expand
                     cargo-typify
+                    cargo-llvm-cov
                     nodePackages.typescript-language-server
                     vscode-langservers-extracted
                   ]
@@ -241,7 +242,7 @@
               hooks = {
                 # keep-sorted start case=no
                 check-executables-have-shebangs.enable = true;
-                check-shebang-scripts-are-executable.enable = true;
+                # check-shebang-scripts-are-executable.enable = true;
                 detect-private-keys.enable = true;
                 end-of-file-fixer.enable = true;
                 nixfmt-rfc-style.enable = true;
@@ -256,13 +257,24 @@
               };
             };
           };
-          process-compose.redis-service =
+          process-compose.support-services =
             { config, ... }:
             {
               imports = [
                 inputs.services-flake.processComposeModules.default
               ];
               services.redis."redis".enable = true;
+              # services.postgres."pqsl" = {
+              #   enable = true;
+              #   initialScript.before = ''
+              #     CREATE USER myuser WITH password 'mypasswd';
+              #   '';
+              # };
+              # services.pgadmin."admin" = {
+              #   enable = true;
+              #   initialEmail = "email@gmail.com";
+              #   initialPassword = "password";
+              # };
             };
         };
     };

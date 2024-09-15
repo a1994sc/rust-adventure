@@ -1,36 +1,53 @@
-extern crate schema_lib;
+extern crate linkage_lib;
 
-use clap::{Parser, Subcommand};
-use schema_lib::linkage::*;
+use actix_web::{middleware, web, App, HttpServer};
 
-/// Simple program to greet a person
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-#[command(propagate_version = true)]
-struct Args {
-    #[command(subcommand)]
-    cmd: Commands,
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
+    log::info!("starting HTTP server at http://localhost:8080");
+
+    HttpServer::new(|| {
+        App::new()
+            // enable logging
+            .wrap(middleware::Logger::default())
+            .service(actix_lib_impl::index)
+            .service(actix_lib_impl::healthz)
+            .service(web::scope("/v0/linkage").configure(actix_lib_impl::scoped_api_config))
+    })
+    .bind(("0.0.0.0", 8080))?
+    .run()
+    .await
 }
 
-#[derive(Debug, Subcommand)]
-enum Commands {
-    /// Function to combine two positive int, order matters
-    Pair { a: u32, b: u32 },
-    /// Function to separate any positive int into two numbers
-    Separate { id: u32 },
-}
+mod actix_lib_impl {
+    use actix_web::{web, HttpResponse, Responder, Result};
+    use linkage_lib::linkage::*;
 
-// const ZARF_SCHEMA: &str = include_str!("../schema/zarf.schema.json");
+    #[actix_web::get("/sep")]
+    pub async fn actix_separate(encode: web::Query<Encoded>) -> Result<impl Responder> {
+        Ok(web::Json(separate(encode.0)))
+    }
 
-fn main() {
-    let args: Args = Args::parse();
+    #[actix_web::get("/pair")]
+    pub async fn actix_pair(decode: web::Query<Decoded>) -> Result<impl Responder> {
+        Ok(web::Json(pair(decode.0)))
+    }
 
-    match &args.cmd {
-        Commands::Pair { a, b } => {
-            println!("{:?}", pair(Decoded { a: *a, b: *b }));
-        }
-        Commands::Separate { id } => {
-            println!("{:?}", separate(Encoded { id: *id }));
-        }
+    #[actix_web::get("/")]
+    pub async fn index() -> HttpResponse {
+        HttpResponse::Ok().body("data")
+    }
+
+    #[actix_web::get("/healthz")]
+    pub async fn healthz() -> HttpResponse {
+        HttpResponse::Ok()
+            .append_header(("version", "0.0.1"))
+            .finish()
+    }
+
+    pub fn scoped_api_config(cfg: &mut web::ServiceConfig) {
+        cfg.service(actix_pair).service(actix_separate);
     }
 }

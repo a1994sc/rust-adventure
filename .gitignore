@@ -6,6 +6,9 @@
 .direnv
 .pre-commit-config.yaml
 
+# ignore process-compose data
+/data
+
 # misc
 *.tar.gz
 *.txt

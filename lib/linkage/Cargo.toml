@@ -1,11 +1,11 @@
 [package]
-name = "schema-lib"
+name = "linkage-lib"
 version = "0.0.1"
 authors.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Library that holds the schemas"
+description = "Library that handles mathematical functions"
 
 [dependencies]
 num = "0.4.3"
-serde = { version = "1.0.210", features = ["derive"] }
+serde.workspace = true

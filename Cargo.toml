@@ -1,16 +1,18 @@
 [package]
 authors = [ "Allen Conlon <allen@conlon.dev>" ]
 edition = "2021"
-name = "package-builder"
-description = "Project to build a zarf.yaml file from a bigbang release"
+name = "appz"
+description = "Playground"
 version = "0.0.1"
 license = "MIT"
 
 [dependencies]
-clap = { version = "4.5.17", features = ["derive"] }
-serde = { version = "1.0.210", features = ["derive"]}
-serde_yaml_ng = "0.10"
-schema-lib = { path = "schema-lib" }
+actix-web = "4.9.0"
+env_logger = "0.11.5"
+log = "0.4.22"
+serde = { version = "1.0.210", features = ["derive"] }
+# libraries
+linkage-lib = { path = "lib/linkage" }
 
 [profile.release]
 opt-level = "z"
@@ -20,9 +22,13 @@ panic = "abort"
 strip = true
 
 [workspace]
-members = [ "schema-lib" ]
+members = [ "lib/linkage", "lib/schema" ]
 
 [workspace.package]
 edition = "2021"
 license = "MIT"
 authors = [ "Allen Conlon <allen@conlon.dev>" ]
+
+[workspace.dependencies]
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = { version = "1.0.128" }
