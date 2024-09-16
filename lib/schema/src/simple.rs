@@ -62,7 +62,7 @@ pub mod error {
 #[doc = "}"]
 #[doc = r" ```"]
 #[doc = r" </details>"]
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct Simple {
     pub completed: bool,
     pub id: f64,
@@ -78,14 +78,6 @@ impl From<&Simple> for Simple {
 impl Simple {
     pub fn builder() -> builder::Simple {
         Default::default()
-    }
-}
-impl PartialEq for Simple {
-    fn eq(&self, other: &Self) -> bool {
-        self.completed == other.completed
-            && self.id == other.id
-            && self.title == other.title
-            && self.user_id == other.user_id
     }
 }
 #[doc = r" Types for composing complex structures."]

@@ -8,7 +8,7 @@ mod test_schema_simple {
     use crate::simple::*;
 
     #[test]
-    fn test_struct_simple() {
+    fn test_simple_struct() {
         let simple_struct_a: Simple = Simple {
             completed: true,
             id: 17.0,
@@ -31,7 +31,7 @@ mod test_schema_simple {
     }
 
     #[test]
-    fn test_builder_simple() {
+    fn test_simple_builder() {
         let simple_build_a: Simple = Simple::builder()
             .completed(true)
             .id(17.0)
@@ -56,28 +56,50 @@ mod test_schema_simple {
     }
 }
 
+// #[cfg(test)]
+// mod test_schema_misc {
+//     use std::io;
+
+//     fn parse_data(input: i32) -> Result<i32, io::Error> {
+//         match input {
+//             0 => Ok(0),
+//             x => Err(io::Error::new(
+//                 io::ErrorKind::InvalidData,
+//                 format!("unexpected number {}", x),
+//             )),
+//         }
+//     }
+
+//     #[test]
+//     fn test_parsing_wrong_data() {
+//         let result = parse_data(1).map_err(|e| e.kind());
+//         let expected = Err(io::ErrorKind::InvalidData);
+//         assert_eq!(expected, result);
+//     }
+// }
+
 #[cfg(test)]
 mod test_schema_veggies {
     use crate::veggies::*;
 
     #[test]
     fn test_struct_veggies() {
-        let veg_build: Veggie = Veggie::builder()
-            .veggie_name("carrots")
-            .veggie_like(true)
-            .try_into()
-            .unwrap();
-
-        let veg_struct: Veggie = Veggie {
+        let veg_struct_a: Veggie = Veggie {
             veggie_like: true,
             veggie_name: "carrots".to_string(),
         };
 
-        let veggies: Veggies = Veggies {
+        let veg_struct_b: Veggie = veg_struct_a.clone();
+
+        assert_eq!(veg_struct_a, veg_struct_b);
+
+        let veggies_struct_a: Veggies = Veggies {
             fruits: vec![String::from("apple"), String::from("mango")],
-            vegetables: vec![veg_struct, veg_build],
+            vegetables: vec![veg_struct_a, veg_struct_b],
         };
 
-        println!("{:?}", veggies);
+        let veggies_struct_b: Veggies = veggies_struct_a.clone();
+
+        assert_eq!(veggies_struct_a, veggies_struct_b);
     }
 }
