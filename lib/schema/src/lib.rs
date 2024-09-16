@@ -56,34 +56,13 @@ mod test_schema_simple {
     }
 }
 
-// #[cfg(test)]
-// mod test_schema_misc {
-//     use std::io;
-
-//     fn parse_data(input: i32) -> Result<i32, io::Error> {
-//         match input {
-//             0 => Ok(0),
-//             x => Err(io::Error::new(
-//                 io::ErrorKind::InvalidData,
-//                 format!("unexpected number {}", x),
-//             )),
-//         }
-//     }
-
-//     #[test]
-//     fn test_parsing_wrong_data() {
-//         let result = parse_data(1).map_err(|e| e.kind());
-//         let expected = Err(io::ErrorKind::InvalidData);
-//         assert_eq!(expected, result);
-//     }
-// }
-
 #[cfg(test)]
 mod test_schema_veggies {
     use crate::veggies::*;
+    use serde_json::{Map, Value};
 
     #[test]
-    fn test_struct_veggies() {
+    fn test_struct_veggie() {
         let veg_struct_a: Veggie = Veggie {
             veggie_like: true,
             veggie_name: "carrots".to_string(),
@@ -93,13 +72,28 @@ mod test_schema_veggies {
 
         assert_eq!(veg_struct_a, veg_struct_b);
 
-        let veggies_struct_a: Veggies = Veggies {
-            fruits: vec![String::from("apple"), String::from("mango")],
-            vegetables: vec![veg_struct_a, veg_struct_b],
+        let veg_struct_c: Veggie = Veggie {
+            veggie_like: true,
+            veggie_name: "onion".to_string(),
         };
 
-        let veggies_struct_b: Veggies = veggies_struct_a.clone();
+        assert_ne!(veg_struct_a, veg_struct_c);
 
-        assert_eq!(veggies_struct_a, veggies_struct_b);
+        let veg_struct_d: Veggie = Veggie::from(&veg_struct_b);
+
+        assert_eq!(veg_struct_d, veg_struct_b);
+    }
+
+    #[test]
+    fn test_struct_fruit() {
+        let mut list: Map<String, Value> = Map::new();
+        list.insert("Lorem".to_string(), "ipsum".into());
+        let fruit_struct_a: Fruit = Fruit::from(list);
+
+        // println!("{:?}", fruit_struct_a);
+
+        let fruit_struct_b: Fruit = Fruit::from(&fruit_struct_a);
+
+        assert_eq!(fruit_struct_a, fruit_struct_b);
     }
 }
