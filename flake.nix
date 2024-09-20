@@ -30,7 +30,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zarf-dev = {
-      url = "github:zarf-dev/zarf/v0.39.0";
+      url = "github:zarf-dev/zarf/v0.40.1";
       flake = false;
     };
     # keep-sorted end
@@ -68,7 +68,14 @@
               programs.dprint = {
                 enable = true;
                 settings = {
-                  includes = [ "**/*.{json,md,toml}" ];
+                  includes = [
+                    "**/*.toml"
+                    "**/*.json"
+                    "**/*.md"
+                  ];
+                  excludes = [
+                    "**/target"
+                  ];
                   plugins =
                     let
                       dprintWasmPluginUrl = n: v: "https://plugins.dprint.dev/${n}-${v}.wasm";

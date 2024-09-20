@@ -1,16 +1,17 @@
 [package]
-authors = [ "Allen Conlon <allen@conlon.dev>" ]
-edition = "2021"
 name = "appz"
-description = "Playground"
 version = "0.0.1"
+authors = ["Allen Conlon <allen@conlon.dev>"]
+edition = "2021"
 license = "MIT"
+description = "Playground"
 
 [dependencies]
-actix-web = "4.9.0"
-env_logger = "0.11.5"
-log = "0.4.22"
-serde = { version = "1.0.210", features = ["derive"] }
+actix-web.workspace = true
+env_logger.workspace = true
+log.workspace = true
+serde.workspace = true
+
 # libraries
 linkage-lib = { path = "lib/linkage" }
 
@@ -22,13 +23,17 @@ panic = "abort"
 strip = true
 
 [workspace]
-members = [ "lib/linkage", "lib/schema" ]
+members = ["lib/linkage", "lib/maps", "lib/schema"]
 
 [workspace.package]
+authors = ["Allen Conlon <allen@conlon.dev>"]
 edition = "2021"
 license = "MIT"
-authors = [ "Allen Conlon <allen@conlon.dev>" ]
 
 [workspace.dependencies]
+actix-web = "4.9.0"
+env_logger = "0.11.5"
+log = "0.4.22"
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = { version = "1.0.128" }
+validator = { version = "0.18.1", features = ["derive"] }
