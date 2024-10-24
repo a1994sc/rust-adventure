@@ -1,9 +1,9 @@
 [package]
 name = "appz"
 version = "0.0.1"
-authors = ["Allen Conlon <allen@conlon.dev>"]
-edition = "2021"
-license = "MIT"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
 description = "Playground"
 
 [dependencies]
@@ -34,6 +34,6 @@ license = "MIT"
 actix-web = "4.9.0"
 env_logger = "0.11.5"
 log = "0.4.22"
-serde = { version = "1.0.210", features = ["derive"] }
-serde_json = { version = "1.0.128" }
+serde = { version = "1.0.213", features = ["derive"] }
+serde_json = { version = "1.0.132" }
 validator = { version = "0.18.1", features = ["derive"] }

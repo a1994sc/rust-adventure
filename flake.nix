@@ -16,7 +16,7 @@
     pre-commit-hooks = {
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.nixpkgs-stable.follows = "nixpkgs";
-      url = "github:/cachix/pre-commit-hooks.nix";
+      url = "github:/cachix/git-hooks.nix";
     };
     process-compose-flake.url = "github:Platonic-Systems/process-compose-flake";
     rust-analyzer-src = {
@@ -28,10 +28,6 @@
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    zarf-dev = {
-      url = "github:zarf-dev/zarf/v0.40.1";
-      flake = false;
     };
     # keep-sorted end
   };
@@ -136,15 +132,12 @@
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
             RUSTFLAGS = "-C target-feature=+crt-static -C strip=symbols";
           };
-          preBuild = ''
-            cp -f ${inputs.zarf-dev}/zarf.schema.json schema/zarf.schema.json
-          '';
-          scrtipt = with pkgs; [ (writeShellScriptBin "gather-zarf-schema" preBuild) ];
         in
         {
           packages =
             let
-              inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version name authors;
+              inherit ((pkgs.lib.importTOML ./Cargo.toml).package) version name;
+              inherit ((pkgs.lib.importTOML ./Cargo.toml).workspace.package) authors;
               # https://discourse.nixos.org/t/passing-git-commit-hash-and-tag-to-build-with-flakes/11355/2
               img = {
                 name = "ghcr.io/a1994sc/rust/" + self'.packages.default.pname;
@@ -177,7 +170,6 @@
                       buildInputs
                       env
                       version
-                      preBuild
                       nativeBuildInputs
                       ;
                     src = ./.;
@@ -218,22 +210,19 @@
                 # inputs.fenix.packages.${system}.stable.toolchain
                 name = "rust";
                 # Used for development and testing
-                packages =
-                  with pkgs;
-                  [
-                    typos
-                    gnumake
-                    clippy
-                    cargo-machete
-                    process-compose
-                    cargo-watch
-                    cargo-expand
-                    cargo-typify
-                    cargo-llvm-cov
-                    nodePackages.typescript-language-server
-                    vscode-langservers-extracted
-                  ]
-                  ++ scrtipt;
+                packages = with pkgs; [
+                  typos
+                  gnumake
+                  clippy
+                  cargo-machete
+                  process-compose
+                  cargo-watch
+                  cargo-expand
+                  cargo-typify
+                  cargo-llvm-cov
+                  nodePackages.typescript-language-server
+                  vscode-langservers-extracted
+                ];
                 # When using the "pre-commit" shellHook, it does not load the `env` attributes... so we need to load them manually, but only for the devShell(s).
                 shellHook =
                   self'.checks.pre-commit-check.shellHook
@@ -243,24 +232,25 @@
                   ));
               };
           formatter = treefmtEval.config.build.wrapper;
-          checks = {
-            pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
-              src = ./.;
-              hooks = {
-                # keep-sorted start case=no
-                check-executables-have-shebangs.enable = true;
-                # check-shebang-scripts-are-executable.enable = true;
-                detect-private-keys.enable = true;
-                end-of-file-fixer.enable = true;
-                nixfmt-rfc-style.enable = true;
-                trim-trailing-whitespace.enable = true;
-                # keep-sorted end
-                file-format = {
-                  enable = true;
-                  name = "Run Nix format";
-                  entry = "nix fmt";
-                  pass_filenames = false;
-                };
+          checks.pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
+            src = ./.;
+            hooks = {
+              # keep-sorted start case=no
+              check-executables-have-shebangs.enable = true;
+              detect-private-keys.enable = true;
+              end-of-file-fixer.enable = true;
+              nixfmt-rfc-style.enable = true;
+              trim-trailing-whitespace.enable = true;
+              # keep-sorted end
+              file-format-nix = {
+                enable = true;
+                entry = "nix fmt";
+                pass_filenames = false;
+              };
+              file-format-cargo = {
+                enable = true;
+                entry = "cargo fmt";
+                pass_filenames = false;
               };
             };
           };
