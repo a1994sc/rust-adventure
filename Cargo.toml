@@ -1,5 +1,5 @@
 [package]
-name = "appz"
+name = "package"
 version = "0.0.1"
 authors.workspace = true
 edition.workspace = true
@@ -7,13 +7,8 @@ license.workspace = true
 description = "Playground"
 
 [dependencies]
-actix-web.workspace = true
-env_logger.workspace = true
-log.workspace = true
-serde.workspace = true
-
-# libraries
-linkage-lib = { path = "lib/linkage" }
+clap.workspace = true
+yaml-rust.workspace = true
 
 [profile.release]
 opt-level = "z"
@@ -22,18 +17,11 @@ codegen-units = 1
 panic = "abort"
 strip = true
 
-[workspace]
-members = ["lib/linkage", "lib/maps", "lib/schema"]
-
 [workspace.package]
 authors = ["Allen Conlon <allen@conlon.dev>"]
 edition = "2021"
 license = "MIT"
 
 [workspace.dependencies]
-actix-web = "4.9.0"
-env_logger = "0.11.5"
-log = "0.4.22"
-serde = { version = "1.0.213", features = ["derive"] }
-serde_json = { version = "1.0.132" }
-validator = { version = "0.18.1", features = ["derive"] }
+clap = { version = "4.5.20", features = ["derive"] }
+yaml-rust = { version = "0.9.0", package = "yaml-rust2" }

@@ -1,71 +1,32 @@
-extern crate linkage_lib;
+use clap::Parser;
+use yaml_rust::{YamlEmitter, YamlLoader};
 
-use actix_web::{middleware, web, App, HttpServer};
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-  env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
-
-  log::info!("starting HTTP server at http://localhost:8080");
-
-  HttpServer::new(|| {
-    App::new()
-      // enable logging
-      .wrap(middleware::Logger::default())
-      .service(actix_lib_impl::index)
-      .service(actix_lib_impl::healthz)
-      .service(actix_lib_impl::code)
-      .service(web::scope("/v0/linkage").configure(actix_lib_impl::scoped_api_config))
-  })
-  .bind(("0.0.0.0", 8080))?
-  .run()
-  .await
+/// Search for a pattern in a file and display the lines that contain it.
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Flags {
+    /// The path to the file to read
+    #[arg(long)]
+    path: std::path::PathBuf,
 }
 
-mod actix_lib_impl {
-  use actix_web::{http::StatusCode, web, HttpResponse, Responder, Result};
-  use linkage_lib::linkage::*;
-  use serde::{Deserialize, Serialize};
+fn main() {
+    let flag: Flags = Flags::parse();
+    let s: String = std::fs::read_to_string(&flag.path).expect("could not read file");
 
-  #[derive(Deserialize, Serialize, Debug)]
-  struct Message {
-    pub msg: String,
-  }
+    let docs: Vec<yaml_rust::Yaml> = YamlLoader::load_from_str(&s).unwrap();
 
-  #[actix_web::get("/sep")]
-  pub async fn actix_separate(encode: web::Query<Encoded>) -> Result<impl Responder> {
-    Ok(web::Json(separate(encode.0)))
-  }
+    // Multi document support, doc is a yaml::Yaml
+    let doc: &yaml_rust::Yaml = &docs[0];
 
-  #[actix_web::get("/pair")]
-  pub async fn actix_pair(decode: web::Query<Decoded>) -> Result<impl Responder> {
-    Ok(web::Json(pair_dec(decode.0)))
-  }
+    // Debug support
+    println!("{:?}", doc);
 
-  #[actix_web::get("/")]
-  pub async fn index() -> Result<impl Responder> {
-    Ok(web::Json(Message {
-      msg: "data".to_string(),
-    }))
-  }
-
-  #[actix_web::get("/healthz")]
-  pub async fn healthz() -> HttpResponse {
-    HttpResponse::Ok()
-      .append_header(("version", "0.0.1"))
-      .json(Message {
-        msg: "ok".to_string(),
-      })
-  }
-
-  #[actix_web::get("/code")]
-  pub async fn code() -> HttpResponse {
-    HttpResponse::Ok()
-      .status(StatusCode::ALREADY_REPORTED)
-      .finish()
-  }
-
-  pub fn scoped_api_config(cfg: &mut web::ServiceConfig) {
-    cfg.service(actix_pair).service(actix_separate);
-  }
+    // Dump the YAML object
+    let mut out_str: String = String::new();
+    {
+        let mut emitter: YamlEmitter<'_> = YamlEmitter::new(&mut out_str);
+        emitter.dump(doc).unwrap(); // dump the YAML object to a String
+    }
+    println!("{}", out_str);
 }
