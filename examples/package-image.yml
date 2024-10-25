@@ -3,6 +3,7 @@
 package-image-list:
   istio:
     version: "1.22.5-bb.0"
+    chart: registry1.dso.mil/bigbang/istio:1.22.5-bb.0
     images:
       - "registry1.dso.mil/ironbank/big-bang/base:2.1.0"
       - "registry1.dso.mil/ironbank/opensource/istio/pilot:1.22.5"
@@ -12,5 +13,23 @@ package-image-list:
       - "registry1.dso.mil/ironbank/big-bang/base:2.1.0"
   istioOperator:
     version: "1.22.5-bb.0"
+    chart: registry1.dso.mil/bigbang/istio-operator:1.22.5-bb.0
     images:
       - "registry1.dso.mil/ironbank/opensource/istio/operator:1.22.5"
+---
+list:
+  kyverno:
+---
+# yaml-language-server: $schema=../schema/package-image.schema.json
+package-image-list:
+  kyverno:
+    version: "3.2.7-bb.0"
+    chart: registry1.dso.mil/bigbang/kyverno:3.2.7-bb.0
+    images:
+      - "registry1.dso.mil/ironbank/opensource/kyverno/kyverno/background-controller:v1.12.6"
+      - "registry1.dso.mil/ironbank/opensource/kyverno/kyverno/cleanup-controller:v1.12.6"
+      - "registry1.dso.mil/ironbank/opensource/kyverno/kyverno/reports-controller:v1.12.6"
+      - "registry1.dso.mil/ironbank/opensource/kyverno/kyvernopre:v1.12.6"
+      - "registry1.dso.mil/ironbank/opensource/kyverno:v1.12.6"
+      - "registry1.dso.mil/ironbank/redhat/ubi/ubi9-minimal:9.4"
+      - "registry1.dso.mil/ironbank/opensource/kubernetes/kubectl:v1.30.5"
