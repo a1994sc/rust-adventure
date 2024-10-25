@@ -13,6 +13,7 @@ struct Flags {
 const LIST_KEY: &str = "package-image-list";
 const CHART_KEY: &str = "chart";
 const VERSION_KEY: &str = "version";
+const IMAGES_KEY: &str = "images";
 
 fn main() {
     let flag: Flags = Flags::parse();
@@ -23,20 +24,33 @@ fn main() {
     for doc in docs.iter_mut() {
         let list: yaml_rust::Yaml = yaml_rust::Yaml::String(LIST_KEY.to_string());
 
-        if doc.as_hash().unwrap().contains_key(&list) {
-            let package: &yaml_rust::Yaml = &doc[LIST_KEY];
-            let chart: yaml_rust::Yaml = yaml_rust::Yaml::String(CHART_KEY.to_string());
-            let version: yaml_rust::Yaml = yaml_rust::Yaml::String(VERSION_KEY.to_string());
+        if let Some(package) = doc.as_hash().filter(|hash| hash.contains_key(&list)) {
+            if let Some(pkgs) = package[&list].as_hash() {
+                for key in pkgs.keys() {
+                    let chart: yaml_rust::Yaml = yaml_rust::Yaml::String(CHART_KEY.to_string());
+                    let version: yaml_rust::Yaml = yaml_rust::Yaml::String(VERSION_KEY.to_string());
+                    let images: yaml_rust::Yaml = yaml_rust::Yaml::String(IMAGES_KEY.to_string());
 
-            for key in package.as_hash().unwrap().keys() {
-                let pkg = package.as_hash().unwrap().get(key).unwrap();
+                    if let Some(v) = pkgs[&key]
+                        .as_hash()
+                        .filter(|hash| hash.contains_key(&chart))
+                    {
+                        println!("{:?}", v[&chart]);
+                    }
 
-                if pkg.as_hash().unwrap().contains_key(&version) {
-                    println!("{:?}", pkg[VERSION_KEY].as_str().unwrap());
-                }
+                    if let Some(v) = pkgs[&key]
+                        .as_hash()
+                        .filter(|hash| hash.contains_key(&version))
+                    {
+                        println!("{:?}", v[&version]);
+                    }
 
-                if pkg.as_hash().unwrap().contains_key(&chart) {
-                    println!("{:?}", pkg[CHART_KEY].as_str().unwrap());
+                    if let Some(v) = pkgs[&key]
+                        .as_hash()
+                        .filter(|hash| hash.contains_key(&images))
+                    {
+                        println!("{:?}", v[&images]);
+                    }
                 }
             }
         }
