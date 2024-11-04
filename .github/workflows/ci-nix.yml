@@ -17,7 +17,7 @@ jobs:
       packages: write
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-    - uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
+    - uses: DeterminateSystems/nix-installer-action@b92f66560d6f97d6576405a7bae901ab57e72b6a # v15
       with:
         extra-conf: |
           trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
