@@ -131,6 +131,10 @@
             CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold " + RUSTFLAGS;
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
             RUSTFLAGS = "-C target-feature=+crt-static -C strip=symbols";
+            OPENSSL_DIR = "${pkgs.openssl.dev}";
+            OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include";
+            OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
+            PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
           };
         in
         {
@@ -222,6 +226,7 @@
                   cargo-llvm-cov
                   nodePackages.typescript-language-server
                   vscode-langservers-extracted
+                  gdb
                 ];
                 # When using the "pre-commit" shellHook, it does not load the `env` attributes... so we need to load them manually, but only for the devShell(s).
                 shellHook =
