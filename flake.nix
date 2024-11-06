@@ -112,9 +112,8 @@
               };
             }
           );
-          target =
-            (if (lib.hasPrefix "x86_64" system) then "x86_64-unknown" else "aarch64-unknown") + "-linux-musl";
-          fenix-musl =
+          target = (if (lib.hasPrefix "x86_64" system) then "x86_64" else "aarch64") + "-unknown-linux-gnu";
+          fenix =
             with inputs.fenix.packages.${system};
             combine [
               stable.toolchain
@@ -124,13 +123,13 @@
             openssl
             buildPackages.pkg-config
           ];
-          nativeBuildInputs = [ fenix-musl ];
+          nativeBuildInputs = [ fenix ];
           env = rec {
             CARGO_BUILD_TARGET = target;
             CARGO_LINKER = "${pkgs.clang_18}/bin/clang";
             CARGO_RUSTFLAGS = "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold " + RUSTFLAGS;
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
-            RUSTFLAGS = "-C target-feature=+crt-static -C strip=symbols";
+            RUSTFLAGS = "";
             OPENSSL_DIR = "${pkgs.openssl.dev}";
             OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include";
             OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
@@ -223,7 +222,6 @@
                   cargo-watch
                   cargo-expand
                   cargo-typify
-                  cargo-llvm-cov
                   nodePackages.typescript-language-server
                   vscode-langservers-extracted
                   gdb
@@ -266,17 +264,6 @@
                 inputs.services-flake.processComposeModules.default
               ];
               services.redis."redis".enable = true;
-              # services.postgres."pqsl" = {
-              #   enable = true;
-              #   initialScript.before = ''
-              #     CREATE USER myuser WITH password 'mypasswd';
-              #   '';
-              # };
-              # services.pgadmin."admin" = {
-              #   enable = true;
-              #   initialEmail = "email@gmail.com";
-              #   initialPassword = "password";
-              # };
             };
         };
     };
