@@ -3,7 +3,7 @@ all: build
 
 .PHONY: build
 build:
-	@nix build .#rust-testing
+	@cargo build --release
 
 .PHONY: clean
 clean:
@@ -13,14 +13,10 @@ clean:
 test:
 	@cargo test
 
-.PHONY: fmt
-fmt:
-	@nix fmt
-
-.PHONY: update-flake
-update-flake:
-	@nix flake update
-
 .PHONY: update-cargo
 update-cargo:
 	@cargo update
+
+.PHONY: fmt
+fmt:
+	@cargo fmt

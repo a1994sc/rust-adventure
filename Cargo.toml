@@ -1,14 +1,10 @@
 [package]
-name = "package"
+name = "ape-chooser"
 version = "0.0.1"
-authors.workspace = true
-edition.workspace = true
-license.workspace = true
+authors = ["Allen Conlon <allen@conlon.dev>"]
+edition = "2021"
+license = "MIT"
 description = "Playground"
-
-[dependencies]
-clap.workspace = true
-yaml-rust.workspace = true
 
 [profile.release]
 opt-level = "z"
@@ -16,12 +12,3 @@ lto = true
 codegen-units = 1
 panic = "abort"
 strip = true
-
-[workspace.package]
-authors = ["Allen Conlon <allen@conlon.dev>"]
-edition = "2021"
-license = "MIT"
-
-[workspace.dependencies]
-clap = { version = "4.5.20", features = ["derive"] }
-yaml-rust = { version = "0.9.0", package = "yaml-rust2" }
