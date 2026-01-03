@@ -24,7 +24,7 @@ in
 {
   languages.rust = {
     enable = true;
-    channel = "stable";
+    channel = "nightly";
     # rustflags = "-C target-feature=+crt-static -C strip=symbols";
     mold.enable = true;
     targets = [
