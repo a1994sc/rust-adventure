@@ -1,55 +1,45 @@
 {
-  "llvm-target": "x86_64-unknown-linux-musl",
-  "target-pointer-width": 64,
+  "allows-weak-linkage": true,
   "arch": "x86_64",
-  "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128",
   "cpu": "x86-64",
-  "os":"linux",
-  "env": "musl",
-  "panic-strategy":"abort",
-  "requires-uwtable":false,
-  "dynamic-linking": false,
-  "executables": true,
-  "exe-suffix": ".com.dbg",
-  "emit-debug-gdb-scripts":false,
   "crt-static-default": true,
-  "crt-static-respected": false,
-  "linker-is-gnu":true,
-  "allows-weak-linkage":true,
+  "crt-static-respected": true,
+  "data-layout": "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128",
+  "disable-redzone": true,
+  "dynamic-linking": false,
+  "eh-frame-header": false,
+  "emit-debug-gdb-scripts": false,
+  "env": "musl",
+  "exe-suffix": ".com.dbg",
+  "executables": true,
+  "frame-pointer": "always",
   "has-rpath": false,
   "has-thread-local": false,
-  "trap-unreachable":true,
-  "position-independent-executables": false,
-  "static-position-independent-executables": false,
-  "relocation-model": "static",
-  "disable-redzone":true,
-  "frame-pointer":"always",
-  "requires-lto":false,
-  "eh-frame-header":false,
-  "no-default-libraries":true,
-  "max-atomic-width":64,
-  "linker-flavor":"gcc",
   "linker": "./gcc-linker-wrapper.bash",
-  "late-link-args": {
-    "gcc": []
-  },
-  "late-link-args-static": {
-    "gcc": []
-  },
+  "linker-flavor": "gnu-cc",
+  "llvm-target": "x86_64-unknown-linux-musl",
+  "max-atomic-width": 64,
+  "no-default-libraries": true,
+  "os": "linux",
+  "panic-strategy": "abort",
+  "position-independent-executables": false,
   "pre-link-args": {
-    "gcc": [
+    "gnu-cc": [
       "-static",
       "-pg",
       "-mnop-mcount"
     ]
   },
-  "post-link-args": {
-    "gcc": []
-  },
+  "relocation-model": "static",
+  "requires-lto": false,
+  "requires-uwtable": false,
   "stack-probes": {
     "kind": "none"
   },
+  "static-position-independent-executables": false,
   "target-family": [
     "unix"
-  ]
+  ],
+  "target-pointer-width": 64,
+  "trap-unreachable": true
 }
